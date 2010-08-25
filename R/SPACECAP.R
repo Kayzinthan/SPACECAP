@@ -643,7 +643,7 @@ SPACECAP <- function()
         tkmessageBox(message=geterrmessage(),icon="error",type="ok") 
     }
    
-    tkwm.title(tt,"SPACECAP Ver 1.0")
+    tkwm.title(tt,"SPACECAP Ver 1.0.1")
   
   	topMenu <- tkmenu(tt)
   	tkconfigure(tt, menu=topMenu)
