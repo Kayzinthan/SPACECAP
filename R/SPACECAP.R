@@ -1,12 +1,14 @@
-SPACECAP <- function() 
-{
-    require(tcltk)
-    library(TeachingDemos)
-    tclRequire("Tktable")
+SPACECAP <- function()
+{    
+    # Loads tcktk package, TeachingDemos and the tck package Tktable
+    require(tcltk) 
+    library(TeachingDemos) 
+    tclRequire("Tktable") 
   
+    # Create a top level window from a tkwidget
   	tt <- tktoplevel()
   
-  	#Global variables 
+  	# Define Global variables 
   	locidso <- NULL
   	locso <- NULL
   	grid2500 <- NULL
@@ -18,7 +20,7 @@ SPACECAP <- function()
     statusText <- tclVar(" ")
     shouldIStop <- FALSE
   
-    ## Read capture details file
+    ## Action function to read animal capture details file
   	readFile1 <- function ()
   	{
   		file <- tclvalue(tkgetOpenFile())
@@ -31,7 +33,7 @@ SPACECAP <- function()
   		tkfocus(tt)
   	}
   
-    ## Read deployment details file
+    ## Action function to read trap deployment details file
   	readFile2 <- function ()
   	{
   		file <- tclvalue(tkgetOpenFile())
@@ -44,7 +46,7 @@ SPACECAP <- function()
   		tkfocus(tt)
   	}
   
-    ## Read potential activity centers file
+    ## Action function to read potential activity centers file
   	readFile3 <- function ()
   	{
   		file <- tclvalue(tkgetOpenFile())
@@ -103,7 +105,7 @@ SPACECAP <- function()
         ### Function for getting the deployment values in a LOC x SO format
     		makeMask3d = function()
     		{
-    		  ## In the deployment file, the SO's start from column 4
+    		  ## In the deployment file, the SO start from column 4
       		posFirstSO = 4
       		posLastSO = nSO+3
           mask3d = as.matrix(locso[,posFirstSO:posLastSO])
@@ -111,7 +113,7 @@ SPACECAP <- function()
       		mask3d
     		}
         tiger3dData <- structure(list(makeData3d(), makeMask3d()), .Names = c("data3d", "mask3d"))
-    		grid2500 <- structure(c(grid2500[,1], grid2500[,2], grid2500[,3]), .Dim = c(length(grid2500[,1]), 3), .Dimnames = list(c(1:length(grid2500[,1])), c("X_Coord", "Y_Coord", "tighab")))
+    		grid2500 <- structure(c(grid2500[,1], grid2500[,2], grid2500[,3]), .Dim = c(length(grid2500[,1]), 3), .Dimnames = list(c(1:length(grid2500[,1])), c("X_Coord", "Y_Coord", "HABITAT")))
     		ctLocs <- structure(list(grid = structure(list(x = locso[,2], y = locso[,3]), .Names = c("x", "y"), row.names = c(1:nLOC), class = "data.frame")), .Names = c("grid"))
 
         list(tiger3dData=tiger3dData, grid2500=grid2500, ctLocs=ctLocs)
@@ -120,7 +122,7 @@ SPACECAP <- function()
     ####
     ## The main script for running the Sapcecap analysis
     ####
-    SCRd.fn <- function(ni=52000,burn=2000,skip=50,bsigma=1,Mb=0,nz=450)
+    SCRd.fn <- function(ni=52000,burn=2000,skip=50,bsigma=1,Mb=0,nz=450,dexp=2)
     {
         # Feb 23 -- andy tinkered with activity center updating
         # Feb 24 -- changed behavioral response to regression variable
@@ -138,12 +140,16 @@ SPACECAP <- function()
         # which is nind x T x ntraps
         # MASK which is ntraps x reps (it gets transposed though)
         # traplocs = coordinates of trap locations
-  
+
+#################### GUI related START######################
+
       	cat("Starting Analysis...", fill=TRUE)
       	
         statusText <<- "\nStarting analysis\n"
         tkinsert(statusWin, "end", statusText)
-        
+	
+#################### GUI related END #######################		
+		
       	# Read data from input files 
       	hold = readData()
     
@@ -152,11 +158,18 @@ SPACECAP <- function()
       	ctLocs = hold$ctLocs
       
       	Y<-tiger3dData$data3d          # nind x nT x ntraps
-      	MASK<-t(tiger3dData$mask3d)    #  want this to be rep x traps
+      	MASK<-t(tiger3dData$mask3d)    # want this to be rep x traps
       	traplocs<-as.matrix(ctLocs$grid)
       	GRID=grid2500
-      
-  
+		
+		
+################### Output related START ####################
+		gridsub=subset(grid2500, grid2500[,3]>0)
+		nhrc=sum(grid2500[,3])
+		
+
+################### Output related END ######################
+		
         ###
         ###
         # what are the dimensions of the problem
@@ -299,7 +312,7 @@ SPACECAP <- function()
         }
   
   
-        trapgridbig<-traplocs[trapid,]   # streteches out the trap coord matrix 
+        trapgridbig<-traplocs[trapid,]   # stretches out the trap coord matrix 
         y1<-y==1
         c1<- (S[indid,1]-trapgridbig[,1])^2
         c2<- (S[indid,2]-trapgridbig[,2])^2
@@ -312,12 +325,75 @@ SPACECAP <- function()
         delta<- 0 
         z<-c(rep(1,nind),rbinom(nz,1,psi))
   
+################ Output related START ###################
         out<-matrix(NA,nrow=(ni-burn)/skip,ncol=5)
         dimnames(out)<-list(NULL,c("sigma","lam0","beta","psi","Nsuper"))
         zout<-matrix(NA,nrow=(ni-burn)/skip,ncol=M)
         Sout<-matrix(NA,nrow=(ni-burn)/skip,ncol=M)
-  
-        #############################################################3
+#		indlocs<-matrix(NA,nrow=(ni-burn)/skip,ncol=M)
+#		pixcount<-c(rep(0, length(grid2500[ ,2])))
+#		pixdensity<-c(rep(0, length(pixcount)))
+
+		
+        ################ Utility functions for generating spatial plots #################
+		
+        ####### Setting the scale for spatial plots #######
+#		imagescale <-function (z, col, x, y = NULL, size = NULL, digits = 2, labels = c("breaks", "ranges")){
+			
+			# sort out the location
+#			n <- length(col)
+#			usr <- par("usr")
+#			mx <- mean(usr[1:2]); my <- mean(usr[3:4])
+#			dx <- diff(usr[1:2]); dy <- diff(usr[3:4])
+#			if (missing(x))
+#			x <- mx + 1.05*dx/2	# default x to right of image
+#			else if (is.list(x)) {
+#				if (length(x$x) == 2) 
+#				size <- c(diff(x$x), -diff(x$y)/n)
+#				y <- x$y[1]
+#				x <- x$x[1]
+#			} else x <- x[1]
+#			if (is.null(size))
+#			if (is.null(y)) {
+#				size <- 0.618*dy/n	# default size, golden ratio
+#				y <- my + 0.618*dy/2	# default y to give centred scale
+#			} else size <- (y-my)*2/n
+#			if (length(size)==1)
+#			size <- rep(size, 2)	# default square boxes
+#			if (is.null(y))
+#			y <- my + n*size[2]/2
+			
+			# draw the image scale
+#			i <- seq(along = col)
+#			rect(x, y - i * size[2], x + size[1], y - (i - 1) * size[2], 
+#				 col = rev(col), xpd = TRUE)
+			
+			# sort out the labels
+#			rng <- range(z, na.rm = TRUE)
+#			bks <- seq(from = rng[2], to = rng[1], length = n + 1)
+#			bks <- formatC(bks, format="f", digits=digits)
+#			labels <- match.arg(labels)
+#			if (labels == "breaks")
+#			ypts <- y - c(0, i) * size[2]
+#			else {
+#				bks <- paste(bks[-1], bks[-(n+1)], sep = " - ")
+#				ypts <- y - (i - 0.5) * size[2]
+#			}
+#			text(x = x + 1.2 * size[1], y = ypts, labels = bks, adj =
+#				 ifelse(size[1]>0, 0, 1), xpd = TRUE) 
+#			}
+		
+		
+		####### the spatial plot utility function #######
+#		spatialplot<-function(x,y){
+#			nc<-as.numeric(cut(y,20))
+#			plot(x,pch=" ")
+#			points(x,pch=20,col=topo.colors(20)[nc],cex=2)
+#			imagescale(y,col=topo.colors(20))
+#			}
+		
+######### Output related END ###############		
+######### GUI related START ################		
         
         if(shouldIStop==TRUE) {
             shouldIStop <<- FALSE; 
@@ -330,10 +406,11 @@ SPACECAP <- function()
 
       statusText <<- "Burn-in in progress\n"
       tkinsert(statusWin, "end", statusText)
- 
+######### GUI related END ##################
       m<-1
       for(i in 1:ni)
       {
+######### GUI related START ##################
           cat("iter: ",i,fill=TRUE)
           Sys.sleep(0.1)
           if(shouldIStop==TRUE) {
@@ -342,7 +419,7 @@ SPACECAP <- function()
             tkinsert(statusWin, "end", statusText)
             stop(call.=FALSE, "Analysis stopped") }
           setTkProgressBar(pb, i, label=paste(round((i*100)/ni),"% completed"))
-            
+######### GUI related END ##################            
           ########################
           ########################
           ########################
@@ -352,8 +429,8 @@ SPACECAP <- function()
           # (BEHAVIORAL RESPONSE) (3) THE SPATIAL PARAMETER "sigma"
           ### Updating parameters here should only involve guys with z = 1 (i.e., members of the population)
   
-          lp<-  loglam0 + Mb*beta*prevcap - (bsigma/sigma)*(c1+c2)
-          lik1<- log( (1/exp(-exp(lp)))  -1 )
+          lp<-  loglam0 + Mb*beta*prevcap - (bsigma/sigma)*((c1+c2)^(dexp*0.5))
+		  lik1<- log( expm1(exp(lp)))
           lik2<- clogloginvpart1(lp)
           llvector<- lik2
           llvector[y1]<- llvector[y1]+ lik1[y1]
@@ -362,8 +439,8 @@ SPACECAP <- function()
           loglam0c<-rnorm(1,loglam0,.015)
           sigmac<-exp(rnorm(1,log(sigma),.15))
   
-          lpc<-  loglam0c + Mb*beta*prevcap - (bsigma/sigmac)*(c1+c2)
-          lik1c<- log( (1/exp(-exp(lpc)))  -1 )
+          lpc<-  loglam0c + Mb*beta*prevcap - (bsigma/sigmac)*((c1+c2)^(dexp*0.5))
+          lik1c<- log(expm1(exp(lpc)))
           lik2c<- clogloginvpart1(lpc)
           llvector.new<- lik2c
           llvector.new[y1]<- llvector.new[y1]+ lik1c[y1]
@@ -380,8 +457,10 @@ SPACECAP <- function()
           ### Sept 26 2009 added block of code below
           ### to deal with model Mb.
           betac<- rnorm(1,beta,.05)
-          lpc<-  loglam0 + Mb*betac*prevcap - (bsigma/sigma)*(c1+c2)
-          lik1c<- log( (1/exp(-exp(lpc)))  -1 )
+          lpc<-  loglam0 + Mb*betac*prevcap - (bsigma/sigma)*((c1+c2)^(dexp*0.5))
+          #lik1c<- log( (1/exp(-exp(lpc)))  -1 )
+          lik1c<- log( expm1(exp(lpc)))
+          
           lik2c<- clogloginvpart1(lpc)
           llvector.new<- lik2c
           llvector.new[y1]<- llvector.new[y1]+ lik1c[y1]
@@ -441,17 +520,17 @@ SPACECAP <- function()
           c2c<- (Sc[indid,2]-trapgridbig[,2])^2
           
           # note sometimes xx can be 0 which evaluates log(xx/(1-xx)) to -Inf
-          # I'm not sure if this is really a problem
-          xx<-1-exp(-(exp(loglam0+ Mb*beta*prevcap[y1]) )* exp(-(bsigma/sigma)*(c1c[y1]+c2c[y1])))
+          # I am not sure if this is really a problem
+          xx<-1-exp(-(exp(loglam0+ Mb*beta*prevcap[y1]) )* exp(-(bsigma/sigma)*((c1c[y1]+c2c[y1])^(dexp*0.5))))
           xx<- log( xx/(1-xx)  )
-          zz<-    -exp(loglam0+Mb*beta*prevcap)*exp(-(bsigma/sigma)*(c1c+c2c))
+          zz<-    -exp(loglam0+Mb*beta*prevcap)*exp(-(bsigma/sigma)*((c1c+c2c)^(dexp*0.5)))
           llvector.tmp<- zz
           llvector.tmp[y1]<-llvector.tmp[y1]+xx
           likdiff<-rowsum(llvector.tmp-llvector,indid)
           likdiff[z==0]<-0   # this line was in wrong place if using local proposal as above
           
           # this lines sets acceptance prob to 1 for z=0 guys. Note: some calcs in prev
-          # lines probably don't have to be done .... but may be more costly to not do them
+          # lines probably dont have to be done .... but may be more costly to not do them
           likdiff<-likdiff + log(qold/qnew)
           accept<- runif(M)<exp(likdiff)
           #cat("accept rate: ",mean(accept),fill=TRUE)
@@ -477,13 +556,16 @@ SPACECAP <- function()
             Sout[m,]<- centers
             out[m,]<-c(sigma,lam0,beta,psi,sum(z))
             print(out[m,])
+########## GUI related START ############
             statusText <<- paste("sigma\tlam0\tbeta\tpsi\tNsuper\n",round(out[m,1],2), "\t",round(out[m,2],2),"\t", round(out[m,3],2), "\t",round(out[m,4],2),"\t",round(out[m,5],2),"\n") 
             tkinsert(statusWin, "end", statusText)
+########## GUI related END #############
             m<-m+1
           }
-  
+
       } # End of the iterations loop
-  
+		
+########## Output related START ###########
       ## Time stamp
       ts <- format(Sys.time(), "%H:%M:%S")
       ts <- unlist(strsplit(ts, ":"))
@@ -496,10 +578,61 @@ SPACECAP <- function()
       write.csv(file=fname, out)
       cat("Analysis Complete. Parameter estimates written to ", getwd(), "/", fname, sep="", fill=TRUE)
       
+      ## Calculations to obtain pixel-specific densities
+#	  indlocs<-Sout*zout
+#	  freqonpixel<-as.data.frame(table(indlocs))
+	  
+#		for (i in 1:length(freqonpixel[ ,1])){
+#			if(freqonpixel[i,1]!=0){
+#			pixcount[freqonpixel[i,1]]<-freqonpixel[i,2]}
+#		}
+#		pixdensity<-pixcount/m
+      ### logpixdensity<-log(pixdensity)
+########### Output related END ############	 
+	  
+	  ## Addition on July 06 2011 to generate the indicators_val and centers_val output files
+#     fileName1 = paste(folderName,"/centers_val_",ts,".csv", sep="")
+#    	write.csv(Sout, file =fileName1)
+#	  fileName2 = paste(folderName,"/indicators_val_",ts,".csv", sep="")
+#	    write.csv(zout, file =fileName2)
+		
+########## Addition on October 21, 2011 to generate pixel densities ########
+	  niter=nrow(Sout)
+		
+# Define a frequency and density matrix
+	  freqmat=matrix(data=NA,nrow=nhrc,ncol=2)
+	  densitymat=matrix(data=NA, nrow=nhrc, ncol=2)
+# Define locations where real animals have been captured
+	  indlocs = Sout*zout
+# Obtain a count of trap-specific encounters and create pixel-specific densities
+		for (i in 1:nhrc){
+			freqmat[i,1]=i
+			densitymat[i,1]=i
+			freqmat[i,2]=length(which(indlocs==i))
+			densitymat[i,2]=freqmat[i,2]/niter
+	}
+#Combining X & Y coordinates to densitymat file
+		cdensitymat<-cbind(gridsub[,1:3],densitymat[,2])
+		        colnames(cdensitymat)[4]<-'Pixel Density'
+   
+#Generate csv file for pixel densities
+		fileName3 = paste(folderName,"/pixeldensities_val_",ts,".csv", sep="")
+	    write.csv(cdensitymat, file =fileName3)
+
+		
+#	  fileName4 = paste(folderName,"/freqonpixel_",ts,".csv", sep="")
+#	    write.csv(freqonpixel, file =fileName4)
+#	  fileName5 = paste(folderName,"/indlocs_",ts,".csv", sep="")
+#	    write.csv(indlocs, file =fileName5)
+#	  fileName6 = paste(folderName,"/pix_densities_", ts, ".csv", sep="")
+#		write.csv(pixdensity, file=fileName6)
+      ##
+############ GUI related START #############      
       statusText <<- paste("Analysis Complete\nParameter estimates written to ", getwd(), "/", fname, "\n", sep="") 
       tkinsert(statusWin, "end", statusText)
       close(pb)
-   
+############ GUI related END ################   
+############ Output related START ##############
       ## Calculating summary statistics of paramteres
       derivedDen <- (out[,5]/(nG*as.numeric(Global_acSize)))*100
       p1 <- 1-exp(-1*out[,2])
@@ -521,11 +654,24 @@ SPACECAP <- function()
         filename = paste("./", folderName, "/density_", rownames[i+1,1], "_", ts, ".jpeg", sep="")
         jpeg(file=filename)
         plot(density(out[,i]), main=rownames[i+1,1])
-        dev.off()      }
-     statusText <<- paste("Density plots of parameters sigma, lam0, beta, psi, Nsuper saved in jpg format to ", getwd(), "/", folderName, "\n", sep="") 
-      tkinsert(statusWin, "end", statusText)
-   		tclarray <- tclArray()
+        dev.off()      
+      }
       
+	  ##### Spatial plot #####
+#	  filename = paste("./", folderName, "/SpatialPlot_", ts, ".jpeg", sep="")
+#		jpeg(file=filename)
+#		spatialplot(gridforplot, pixdensity)
+#		dev.off()
+############ Output related END ##############	
+############ GUI related START ###############		
+      statusText <<- paste("Density plots of parameters sigma, lam0, beta, psi, Nsuper saved in jpg format to ", getwd(), "/", folderName, "\n", sep="") 
+      tkinsert(statusWin, "end", statusText)
+	  
+	  statusText <<- paste("Spatial plot of animal densities saved in jpeg format to ", getwd(), "/", folderName, "\n", sep="")
+	  tkinsert(statusWin, "end", statusText)
+########### GUI related END ##################
+########### Output related START ##############
+	  tclarray <- tclArray()
       fname <- paste(folderName, "/summary_stats_", ts,".csv", sep="")
       if(tclvalue(rbValue78)=="1")  {
         nrowsTclarray <- 8; nrowsTable <- 9 
@@ -533,7 +679,8 @@ SPACECAP <- function()
       }else {
         nrowsTclarray <- 6; nrowsTable <- 7   
         write.table(file=fname, row.names=FALSE, col.names=FALSE, sep=",", resTable[1:7,])  }
-
+########### Output related END ###############
+########### GUI related START ################
       statusText <<- paste("Summary statistics written to ", getwd(), "/", fname, "\n", sep="") 
       tkinsert(statusWin, "end", statusText)
          
@@ -558,13 +705,16 @@ SPACECAP <- function()
     		mod2<-""
         if(tclvalue(rbValue34)=="1")
     		{ mod2<-"Spatial Capture-Recapture"
-        }else{ mod2<-"Non-Spatial Capture-Recapture" }
+			}else{ mod2<-"Non-Spatial Capture-Recapture" }
     		
         if(tclvalue(rbValue78)=="1")
     		{ mod1<-"Trap response present"
     		}else{ mod1<-"Trap response absent" }
+		
+		if(tclvalue(rbValue56)=="1")
+			{ mod3<-"Half-normal detection function"
+			}else{ mod3<-"Negative exponential function" }
     		
-    		mod3<-"Half Normal detection function"
     		mod4<-"Bernoulli detection process"
     		
         txt1 <- paste("Input Summary\nArea of each pixel representing a potential home-range center:", tclvalue(acSize), "sq km")
@@ -604,6 +754,7 @@ SPACECAP <- function()
       		
       		mod1<-""
       		mod2<-""
+			mod3<-""
           if(tclvalue(rbValue34)=="1")
       		{ bsigma=1; mod2<-"Spatial Capture-Recapture"
           }else{ bsigma=0; mod2<-"Non-Spatial Capture-Recapture" }
@@ -611,8 +762,11 @@ SPACECAP <- function()
           if(tclvalue(rbValue78)=="1")
       		{Mb=1; mod1<-"Trap response present"
       		}else{ Mb=0; mod1<-"Trap response absent" }
+		
+		  if(tclvalue(rbValue56)=="1")
+      		{dexp=2; mod3<-"Half-normal detection function"
+      		}else{ dexp=1; mod3<-"Negative exponential detection function" }
       		
-      		mod3<-"Half Normal detection function"
       		mod4<-"Bernoulli detection process"
       		
           statusText <<- paste("Input Summary\n------------\nArea of each pixel representing a potential home-range center:", tclvalue(acSize), "sq km")
@@ -620,7 +774,7 @@ SPACECAP <- function()
           statusText <<- paste(statusText, "\nMCMC simulation settings: Iterations -", ni, "Burnin -", burn, "Thinning -", skip, "Data Augmentation -", nz)
           tkinsert(statusWin, "end", statusText) 
 
-      		SCRd.fn(ni, burn, skip, bsigma, Mb, nz)  }
+      		SCRd.fn(ni, burn, skip, bsigma, Mb, nz, dexp)  }
   	}
 
     stopit <- function()      {
@@ -643,7 +797,7 @@ SPACECAP <- function()
         tkmessageBox(message=geterrmessage(),icon="error",type="ok") 
     }
    
-    tkwm.title(tt,"SPACECAP Ver 1.0.1")
+    tkwm.title(tt,"SPACECAP Ver 1.0.3")
   
   	topMenu <- tkmenu(tt)
   	tkconfigure(tt, menu=topMenu)
@@ -874,8 +1028,8 @@ SPACECAP <- function()
   	tkgrid( rb4,sticky="w" )
   
     rb56_label <- tklabel(choiceFrame,text="Detection function", background = "light blue", padx=10, pady=1)
-  	rb5 <- tkradiobutton(choiceFrame, text = "Half Normal", background = "light blue",state="disabled", padx=10, pady=1)
-  	rb6 <- tkradiobutton(choiceFrame, text = "Negative Exponential", background = "light blue",state="disabled", padx=10, pady=1)
+  	rb5 <- tkradiobutton(choiceFrame, text = "Half Normal", background = "light blue",padx=10, pady=1)
+  	rb6 <- tkradiobutton(choiceFrame, text = "Negative Exponential", background = "light blue",padx=10, pady=1)
   	rbValue56 <- tclVar("1")
   	tkconfigure(rb5,variable=rbValue56,value="1")
   	tkconfigure(rb6,variable=rbValue56,value="0")
@@ -897,6 +1051,8 @@ SPACECAP <- function()
     {
       tkconfigure(rb3,state="disable")
       tkconfigure(rb4,state="disable")
+	  tkconfigure(rb5,state="disable")
+	  tkconfigure(rb6,state="disable")
       tkconfigure(rb7,state="disable")
       tkconfigure(rb8,state="disable")
       tkconfigure(ok2,state="disable")
@@ -907,6 +1063,8 @@ SPACECAP <- function()
     {
       tkconfigure(rb3,state="normal")
       tkconfigure(rb4,state="normal")
+	  tkconfigure(rb5,state="normal")
+	  tkconfigure(rb6,state="normal")
       tkconfigure(rb7,state="normal")
       tkconfigure(rb8,state="normal")
       tkconfigure(ok2,state="active")
@@ -1042,6 +1200,5 @@ SPACECAP <- function()
   	#tkgrid(reset3, padx=10,pady=10, sticky="w")
    	tkgrid.configure(ok3, sticky="e")
   	tkgrid.configure(reset3, sticky="w")
- 
-
+############################ GUI related END ################################
 }

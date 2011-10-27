@@ -20,7 +20,7 @@ SPACECAP()
 
 \details{
 
-\bold{PROGRAM SPACECAP Version 1.0.1}
+\bold{PROGRAM SPACECAP Version 1.0.3}
 
 \bold{Introduction}
 
@@ -101,7 +101,7 @@ beta = b1, is the regression coefficient that measures the behavioral response
 psi = the ratio of the number of animals actually present within S to the maximum allowable number 
       (set by the user during data augmentation - see below). 
 
-\bold{Installing PROGRAM SPACECAP Version 1.0.1}
+\bold{Installing PROGRAM SPACECAP Version 1.0.3}
 
 STEP 1: Download latest version of program \R (R Development Core Team)
 
@@ -412,7 +412,10 @@ trap response present, the estimates of "p1" and "p2" are also reported.
 Additionally, all the results are written into a comma separated file (called \cr param_val_<timestamp>.csv) and is saved 
 into the current working directory. All the summary statistics are written into a file called 
 summary_stats_<timestamp>.csv, which is also saved to the current directory. And the posterior density graphs of all 
-parameters are all stored as jpeg files (.jpg) in the current working directory. 
+parameters are all stored as jpeg files (.jpg) in the current working directory. \pkg{SPACECAP} also reports a file to 
+generate surface density map (called pixeldensities_val_<timestamp>.csv). This table reports estimates of pixel densities,
+and the corresponding X_COORD and Y_COORD of the pixels. The table can be then imported into any GIS platform to view the 
+pixel surface densities. 
 
 \bold{Further Developments in progress}
 
@@ -420,21 +423,21 @@ We plan to add a number of additional utility modules for various applications, 
 subsequent versions to be released in next few months. Some of the features we are currently working on are:
 
 1. Include the Poisson encounter process model. \cr
-2. Include the Negative-Exponential distance function model. \cr
-3. Provide with the Hazard-Rate distance function model. \cr
-4. Generate FIT statistics for model selection using the Bayesian p-value. \cr
+2. Provide with the Hazard-Rate distance function model. \cr
+3. Generate FIT statistics for model selection using the Bayesian p-value. \cr
 
 \bold{Suggested Citation:}
 
-Pallavi Singh, Arjun M. Gopalaswamy, Andrew J. Royle, N. Samba Kumar and K. Ullas Karanth  (2010). 
-SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models. 
-Wildlife Conservation Society - India Program, Centre for Wildlife Studies, Bangalure, India. Version 1.0.1
+Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi, Singh, Devcharan Jathanna, N. Samba Kumar, James D. Nichols,
+K. Ullas Karanth  (2011). SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit 
+Capture-Recapture Models. Wildlife Conservation Society - India Program, Centre for Wildlife Studies, Bangalure, India. 
+Version 1.0.3.
 
 }
 
 \author{
-Pallavi Singh, Arjun M. Gopalaswamy, Andrew J. Royle, N. Samba Kumar and K. Ullas Karanth 
-with contributions from Sumanta Mukherjee, Vatsaraj & Dipti Bharadwaj
+Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar, James D. Nichols and 
+K. Ullas Karanth
 }
 
 \references{

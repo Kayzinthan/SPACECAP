@@ -17,15 +17,15 @@
 \tabular{ll}{
 Package: \tab SPACECAP\cr
 Type: \tab Package\cr
-Version: \tab 1.0.1\cr
-Date: \tab 2010-08-25\cr
+Version: \tab 1.0.3\cr
+Date: \tab 2011-10-27\cr
 License: \tab GPL (>=2)\cr
 LazyLoad: \tab yes\cr
 }
 }
 \author{
-Pallavi Singh, Arjun M. Gopalaswamy, Andrew J. Royle, N. Samba Kumar and K. Ullas Karanth 
-with contributions from Sumanta Mukherjee, Vatsaraj & Dipti Bharadwaj 
+Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar, James D. Nichols and 
+K. Ullas Karanth 
 }
 \references{
 Royle, J. A., K. U. Karanth, A. M. Gopalaswamy and N. S. Kumar. 2009. Bayesian inference in camera trapping studies 

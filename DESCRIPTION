@@ -2,11 +2,10 @@ Package: SPACECAP
 Type: Package
 Title: A Program to Estimate Animal Abundance and Density using
         Spatially-Explicit Capture-Recapture
-Version: 1.0.1
-Date: 2010-08-25
-Author: Pallavi Singh, Arjun M. Gopalaswamy, Andrew J. Royle, N. Samba
-        Kumar and K. Ullas Karanth with contributions from Sumanta
-        Mukherjee, Vatsaraj & Dipti Bharadwaj
+Version: 1.0.3
+Date: 2011-10-27
+Author: Arjun M. Gopalaswamy, Andrew J. Royle, Jim Hines, Pallavi Singh, 
+	Devcharan Jathanna, N. Samba Kumar, James D. Nichols and K. Ullas Karanth
 Maintainer: Jim Hines <jhines@usgs.gov>
 Depends: R (>= 2.9.2), tcltk, TeachingDemos
 Description: SPACECAP is a user-friendly software package for
@@ -20,6 +19,6 @@ Description: SPACECAP is a user-friendly software package for
         appropriate for small samples of capture data typical of
         photo-capture studies.
 License: GPL (>= 2)
+Packaged: 2011-11-24 06:44:17 UTC; user
 Repository: CRAN
-Date/Publication: 2010-08-25 13:36:53
-Packaged: 2010-08-25 12:07:48 UTC; cws
+Date/Publication: 2011-11-24 09:13:08
