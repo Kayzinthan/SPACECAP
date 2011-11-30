@@ -10,12 +10,11 @@ author = personList(as.person("Arjun M. Gopalaswamy"),
 		    as.person("Pallavi Singh"),
  		    as.person("Devcharan Jathanna"),	
                     as.person("N. Samba Kumar"),
-		    as.person("James D. Nichols"),
-                    as.person("K. Ullas Karanth")),
+		    as.person("K. Ullas Karanth")),
 year = year,
 note = vers,
 textVersion =
-paste("Arjun M. Gopalaswamy, Andrew J. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar, James D. Nichols
+paste("Arjun M. Gopalaswamy, Andrew J. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar
 and K. Ullas Karanth (",
 year,
 "). SPACECAP: A Program to Estimate Animal Abundance and Density using Spatially-Explicit Capture-Recapture. ",

@@ -20,7 +20,7 @@ SPACECAP()
 
 \details{
 
-\bold{PROGRAM SPACECAP Version 1.0.3}
+\bold{PROGRAM SPACECAP Version 1.0.4}
 
 \bold{Introduction}
 
@@ -101,7 +101,7 @@ beta = b1, is the regression coefficient that measures the behavioral response
 psi = the ratio of the number of animals actually present within S to the maximum allowable number 
       (set by the user during data augmentation - see below). 
 
-\bold{Installing PROGRAM SPACECAP Version 1.0.3}
+\bold{Installing PROGRAM SPACECAP Version 1.0.4}
 
 STEP 1: Download latest version of program \R (R Development Core Team)
 
@@ -428,16 +428,15 @@ subsequent versions to be released in next few months. Some of the features we a
 
 \bold{Suggested Citation:}
 
-Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi, Singh, Devcharan Jathanna, N. Samba Kumar, James D. Nichols,
-K. Ullas Karanth  (2011). SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit 
-Capture-Recapture Models. Wildlife Conservation Society - India Program, Centre for Wildlife Studies, Bangalure, India. 
-Version 1.0.3.
+Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi, Singh, Devcharan Jathanna, N. Samba Kumar, K. Ullas Karanth (2011). 
+SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models. 
+Wildlife Conservation Society - India Program, Centre for Wildlife Studies, Bangalure, India. 
+Version 1.0.4.
 
 }
 
 \author{
-Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar, James D. Nichols and 
-K. Ullas Karanth
+Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar and K. Ullas Karanth
 }
 
 \references{
