@@ -1,5 +1,5 @@
 SPACECAP <- function()
-{    
+{
     # Loads tcktk package, TeachingDemos and the tck package Tktable
     require(tcltk) 
     library(TeachingDemos) 
@@ -317,7 +317,7 @@ SPACECAP <- function()
         c1<- (S[indid,1]-trapgridbig[,1])^2
         c2<- (S[indid,2]-trapgridbig[,2])^2
   
-        sigma<- .30
+        sigma<- 5*sqrt(0.30/2)
         loglam0<-log(.018)
         beta<-0
         lam0<-exp(loglam0)
@@ -429,7 +429,7 @@ SPACECAP <- function()
           # (BEHAVIORAL RESPONSE) (3) THE SPATIAL PARAMETER "sigma"
           ### Updating parameters here should only involve guys with z = 1 (i.e., members of the population)
   
-          lp<-  loglam0 + Mb*beta*prevcap - (bsigma/sigma)*((c1+c2)^(dexp*0.5))
+          lp<-  loglam0 + Mb*beta*prevcap - ((12.5*bsigma)/(sigma^2))*((c1+c2)^(dexp*0.5))
 		  lik1<- log( expm1(exp(lp)))
           lik2<- clogloginvpart1(lp)
           llvector<- lik2
@@ -439,7 +439,7 @@ SPACECAP <- function()
           loglam0c<-rnorm(1,loglam0,.015)
           sigmac<-exp(rnorm(1,log(sigma),.15))
   
-          lpc<-  loglam0c + Mb*beta*prevcap - (bsigma/sigmac)*((c1+c2)^(dexp*0.5))
+          lpc<-  loglam0c + Mb*beta*prevcap - ((12.5*bsigma)/(sigmac^2))*((c1+c2)^(dexp*0.5))
           lik1c<- log(expm1(exp(lpc)))
           lik2c<- clogloginvpart1(lpc)
           llvector.new<- lik2c
@@ -457,7 +457,7 @@ SPACECAP <- function()
           ### Sept 26 2009 added block of code below
           ### to deal with model Mb.
           betac<- rnorm(1,beta,.05)
-          lpc<-  loglam0 + Mb*betac*prevcap - (bsigma/sigma)*((c1+c2)^(dexp*0.5))
+          lpc<-  loglam0 + Mb*betac*prevcap - ((12.5*bsigma)/(sigma^2))*((c1+c2)^(dexp*0.5))
           #lik1c<- log( (1/exp(-exp(lpc)))  -1 )
           lik1c<- log( expm1(exp(lpc)))
           
@@ -521,9 +521,9 @@ SPACECAP <- function()
           
           # note sometimes xx can be 0 which evaluates log(xx/(1-xx)) to -Inf
           # I am not sure if this is really a problem
-          xx<-1-exp(-(exp(loglam0+ Mb*beta*prevcap[y1]) )* exp(-(bsigma/sigma)*((c1c[y1]+c2c[y1])^(dexp*0.5))))
+          xx<-1-exp(-(exp(loglam0+ Mb*beta*prevcap[y1]) )* exp(-((12.5*bsigma)/(sigma^2))*((c1c[y1]+c2c[y1])^(dexp*0.5))))
           xx<- log( xx/(1-xx)  )
-          zz<-    -exp(loglam0+Mb*beta*prevcap)*exp(-(bsigma/sigma)*((c1c+c2c)^(dexp*0.5)))
+          zz<-    -exp(loglam0+Mb*beta*prevcap)*exp(-((12.5*bsigma)/(sigma^2))*((c1c+c2c)^(dexp*0.5)))
           llvector.tmp<- zz
           llvector.tmp[y1]<-llvector.tmp[y1]+xx
           likdiff<-rowsum(llvector.tmp-llvector,indid)
@@ -555,9 +555,31 @@ SPACECAP <- function()
             zout[m,]<-z
             Sout[m,]<- centers
             out[m,]<-c(sigma,lam0,beta,psi,sum(z))
-            print(out[m,])
+            
+             if(Mb == 0)       #Rashmi
+             {
+             #print ("Line 577: Out matrix contents")
+             cat ("sigma", "   lam0", "    psi", "    Nsuper", "\n")
+             cat (round(out[m,1], 6), round(out[m,2], 6), round(out[m,4], 6), round(out[m,5], 6), "\n")
+             }
+             else
+             {
+             #print ("Line 582: All out matrix contents")
+             print (out[m,])
+             }
+            
+            #print(out[m,])
 ########## GUI related START ############
-            statusText <<- paste("sigma\tlam0\tbeta\tpsi\tNsuper\n",round(out[m,1],2), "\t",round(out[m,2],2),"\t", round(out[m,3],2), "\t",round(out[m,4],2),"\t",round(out[m,5],2),"\n") 
+
+            if(Mb == 0)     #Rashmi
+            {
+            statusText <<- paste("sigma\tlam0\tpsi\tNsuper\n",round(out[m,1],2), "\t",round(out[m,2],2), "\t",round(out[m,4],2), "\t",round(out[m,5],2),"\n") 
+            }
+            else
+            {
+            statusText <<- paste("sigma\tlam0\tbeta\tpsi\tNsuper\n",round(out[m,1],2), "\t",round(out[m,2],2),"\t", round(out[m,3],2), "\t",round(out[m,4],2),"\t",round(out[m,5],2),"\n")
+            }
+            
             tkinsert(statusWin, "end", statusText)
 ########## GUI related END #############
             m<-m+1
@@ -591,10 +613,10 @@ SPACECAP <- function()
 ########### Output related END ############	 
 	  
 	  ## Addition on July 06 2011 to generate the indicators_val and centers_val output files
-#     fileName1 = paste(folderName,"/centers_val_",ts,".csv", sep="")
-#    	write.csv(Sout, file =fileName1)
-#	  fileName2 = paste(folderName,"/indicators_val_",ts,".csv", sep="")
-#	    write.csv(zout, file =fileName2)
+#     nameoffile1 = paste(folderName,"/centers_val_",ts,".csv", sep="")
+#    	write.csv(Sout, file =nameoffile1)
+#	  nameoffile2 = paste(folderName,"/indicators_val_",ts,".csv", sep="")
+#	    write.csv(zout, file =nameoffile2)
 		
 ########## Addition on October 21, 2011 to generate pixel densities ########
 	  niter=nrow(Sout)
@@ -616,16 +638,16 @@ SPACECAP <- function()
 		        colnames(cdensitymat)[4]<-'Pixel Density'
    
 #Generate csv file for pixel densities
-		fileName3 = paste(folderName,"/pixeldensities_val_",ts,".csv", sep="")
-	    write.csv(cdensitymat, file =fileName3)
+		nameoffile3 = paste(folderName,"/pixeldensities_val_",ts,".csv", sep="")
+	    write.csv(cdensitymat, file =nameoffile3)
 
 		
-#	  fileName4 = paste(folderName,"/freqonpixel_",ts,".csv", sep="")
-#	    write.csv(freqonpixel, file =fileName4)
-#	  fileName5 = paste(folderName,"/indlocs_",ts,".csv", sep="")
-#	    write.csv(indlocs, file =fileName5)
-#	  fileName6 = paste(folderName,"/pix_densities_", ts, ".csv", sep="")
-#		write.csv(pixdensity, file=fileName6)
+#	  nameoffile4 = paste(folderName,"/freqonpixel_",ts,".csv", sep="")
+#	    write.csv(freqonpixel, file =nameoffile4)
+#	  nameoffile5 = paste(folderName,"/indlocs_",ts,".csv", sep="")
+#	    write.csv(indlocs, file =nameoffile5)
+#	  nameoffile6 = paste(folderName,"/pix_densities_", ts, ".csv", sep="")
+#		write.csv(pixdensity, file=nameoffile6)
       ##
 ############ GUI related START #############      
       statusText <<- paste("Analysis Complete\nParameter estimates written to ", getwd(), "/", fname, "\n", sep="") 
@@ -650,21 +672,51 @@ SPACECAP <- function()
       dim(colnames)<-c(1,4)
       resTable=cbind(rownames,rbind(colnames,resTable))
 
-      for ( i in 1:5 ) {
-        filename = paste("./", folderName, "/density_", rownames[i+1,1], "_", ts, ".jpeg", sep="")
-        jpeg(file=filename)
+      if(Mb == 0)   #Rashmi: file has been renamed filename and filename has been renamed as nameoffile to avoid partial argument matching warnings
+      {
+         for ( i in 1:2 ) {
+        nameoffile = paste("./", folderName, "/density_", rownames[i+1,1], "_", ts, ".jpeg", sep="")
+        jpeg(filename=nameoffile)
         plot(density(out[,i]), main=rownames[i+1,1])
         dev.off()      
+        }
+        
+        for ( i in 4:5 ) {
+        nameoffile = paste("./", folderName, "/density_", rownames[i+1,1], "_", ts, ".jpeg", sep="")
+        jpeg(filename=nameoffile)
+        plot(density(out[,i]), main=rownames[i+1,1])
+        dev.off()      
+        }
       }
+      else
+      {
+         for ( i in 1:5 ) {
+        nameoffile = paste("./", folderName, "/density_", rownames[i+1,1], "_", ts, ".jpeg", sep="")
+        jpeg(filename=nameoffile)
+        plot(density(out[,i]), main=rownames[i+1,1])
+        dev.off()      
+        }
+      }
+
+      
       
 	  ##### Spatial plot #####
-#	  filename = paste("./", folderName, "/SpatialPlot_", ts, ".jpeg", sep="")
-#		jpeg(file=filename)
+#	  nameoffile = paste("./", folderName, "/SpatialPlot_", ts, ".jpeg", sep="")
+#		jpeg(file=nameoffile)
 #		spatialplot(gridforplot, pixdensity)
 #		dev.off()
 ############ Output related END ##############	
 ############ GUI related START ###############		
-      statusText <<- paste("Density plots of parameters sigma, lam0, beta, psi, Nsuper saved in jpg format to ", getwd(), "/", folderName, "\n", sep="") 
+
+      if(Mb == 0)   #Rashmi
+      {
+      statusText <<- paste("Density plots of parameters sigma, lam0, psi, Nsuper saved in jpg format to ", getwd(), "/", folderName, "\n", sep="")
+      }
+      else
+      {
+      statusText <<- paste("Density plots of parameters sigma, lam0, beta, psi, Nsuper saved in jpg format to ", getwd(), "/", folderName, "\n", sep="")
+      }
+       
       tkinsert(statusWin, "end", statusText)
 	  
 	  statusText <<- paste("Spatial plot of animal densities saved in jpeg format to ", getwd(), "/", folderName, "\n", sep="")
@@ -673,22 +725,48 @@ SPACECAP <- function()
 ########### Output related START ##############
 	  tclarray <- tclArray()
       fname <- paste(folderName, "/summary_stats_", ts,".csv", sep="")
+      
+      
       if(tclvalue(rbValue78)=="1")  {
         nrowsTclarray <- 8; nrowsTable <- 9 
         write.table(file=fname, row.names=FALSE, col.names=FALSE, sep=",", resTable)
-      }else {
+      }else {     #Rashmi
         nrowsTclarray <- 6; nrowsTable <- 7   
-        write.table(file=fname, row.names=FALSE, col.names=FALSE, sep=",", resTable[1:7,])  }
+        write.table(file=fname, row.names=FALSE, col.names=FALSE, sep=",", resTable[1:3,])  
+        write.table(file=fname, append = TRUE, row.names=FALSE, col.names=FALSE, sep=",", resTable[5:7,]) #should be 5:7
+        }
+      
+       # nrowsTclarray <- 6; nrowsTable <- 7   
+       # write.table(file=fname, row.names=FALSE, col.names=FALSE, sep=",", resTable[1:7,])  }
+        
+        
 ########### Output related END ###############
 ########### GUI related START ################
       statusText <<- paste("Summary statistics written to ", getwd(), "/", fname, "\n", sep="") 
       tkinsert(statusWin, "end", statusText)
-         
+      
+      if (Mb == 0)            #Rashmi
+      {
+      for (i in (0:2))
+        for (j in (0:4))
+           tclarray[[i,j]] <- resTable[i+1,j+1]
+           
+      for (i in (4:6))    #should be 4:6
+        for (j in (0:4))
+           tclarray[[i-1,j]] <- resTable[i+1,j+1]      #i is made to be i-1
+        table1 <- tkwidget(two,"table",variable=tclarray,rows=nrowsTable-1,cols=5,titlerows=1,titlecols=1,selectmode="extended",colwidth=20,background="white",state="disabled",borderwidth=2)
+      }
+      else
+      {
       for (i in (0:nrowsTclarray))
         for (j in (0:4))
            tclarray[[i,j]] <- resTable[i+1,j+1]
+           table1 <- tkwidget(two,"table",variable=tclarray,rows=nrowsTable,cols=5,titlerows=1,titlecols=1,selectmode="extended",colwidth=20,background="white",state="disabled",borderwidth=2)
+      }
+         
+      
 
-      table1 <- tkwidget(two,"table",variable=tclarray,rows=nrowsTable,cols=5,titlerows=1,titlecols=1,selectmode="extended",colwidth=20,background="white",state="disabled",borderwidth=2)
+      
             
 #      i<-1
 #      img <-tkrplot(two, function(){par(bg="white",fin=c(3,3));plot(density(out[,i], na.rm=TRUE),main=resTable[i+1,1],)},hscale=0.75, vscale=0.75)
@@ -797,7 +875,7 @@ SPACECAP <- function()
         tkmessageBox(message=geterrmessage(),icon="error",type="ok") 
     }
    
-    tkwm.title(tt,"SPACECAP Ver 1.0.3")
+    tkwm.title(tt,"SPACECAP Ver 1.0.5")
   
   	topMenu <- tkmenu(tt)
   	tkconfigure(tt, menu=topMenu)
@@ -1201,4 +1279,4 @@ SPACECAP <- function()
    	tkgrid.configure(ok3, sticky="e")
   	tkgrid.configure(reset3, sticky="w")
 ############################ GUI related END ################################
-}
+   }

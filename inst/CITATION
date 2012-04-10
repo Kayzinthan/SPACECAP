@@ -3,7 +3,7 @@ desc <- packageDescription("SPACECAP")
 year <- sub(".*(2[[:digit:]]{3})-.*", "\\1", desc$Date)
 vers <- paste("R package version", desc$Version)
 citEntry(entry="Manual",
-title = "A Program to Estimate Animal Abundance and Density using Spatially-Explicit Capture-Recapture",
+title = "A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models",
 author = personList(as.person("Arjun M. Gopalaswamy"),
                     as.person("Andrew J. Royle"),
 		    as.person("Jim Hines"),
@@ -17,5 +17,5 @@ textVersion =
 paste("Arjun M. Gopalaswamy, Andrew J. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar
 and K. Ullas Karanth (",
 year,
-"). SPACECAP: A Program to Estimate Animal Abundance and Density using Spatially-Explicit Capture-Recapture. ",
+"). SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models. ",
 vers, ".", sep=""))

@@ -20,7 +20,7 @@ SPACECAP()
 
 \details{
 
-\bold{PROGRAM SPACECAP Version 1.0.4}
+\bold{PROGRAM SPACECAP Version 1.0.5}
 
 \bold{Introduction}
 
@@ -101,7 +101,7 @@ beta = b1, is the regression coefficient that measures the behavioral response
 psi = the ratio of the number of animals actually present within S to the maximum allowable number 
       (set by the user during data augmentation - see below). 
 
-\bold{Installing PROGRAM SPACECAP Version 1.0.4}
+\bold{Installing PROGRAM SPACECAP Version 1.0.5}
 
 STEP 1: Download latest version of program \R (R Development Core Team)
 
@@ -206,6 +206,7 @@ The first data row tells us that Animal ID no 4 was captured at Location ID 1 on
 In your spreadsheet application, you can build up the animal capture details data as per the above format 
 (please make sure that you INCLUDE the header row with the exact titles on column headings as shown above). 
 The file must eventually be saved as a \emph{.csv} file (for example, "captures.csv") and saved in the working directory.
+It must be ensured that all Animal ID numbers must be sequenced such that no number is missed in the input file.
 
 \bold{INPUT FILE 2: Trap Deployment Details} 
 
@@ -425,13 +426,14 @@ subsequent versions to be released in next few months. Some of the features we a
 1. Include the Poisson encounter process model. \cr
 2. Provide with the Hazard-Rate distance function model. \cr
 3. Generate FIT statistics for model selection using the Bayesian p-value. \cr
+4. Incorporate sex-specific encounters. \cr
 
 \bold{Suggested Citation:}
 
 Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi, Singh, Devcharan Jathanna, N. Samba Kumar, K. Ullas Karanth (2011). 
 SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models. 
-Wildlife Conservation Society - India Program, Centre for Wildlife Studies, Bangalure, India. 
-Version 1.0.4.
+Wildlife Conservation Society - India Program, Centre for Wildlife Studies, Bengaluru, India. 
+Version 1.0.5.
 
 }
 
