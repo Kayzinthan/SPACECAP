@@ -20,7 +20,7 @@ SPACECAP()
 
 \details{
 
-\bold{PROGRAM SPACECAP Version 1.0.5}
+\bold{PROGRAM SPACECAP Version 1.0.6}
 
 \bold{Introduction}
 
@@ -55,7 +55,7 @@ regression, in which
 
     \deqn{y(i,j,k) ~ Bernoulli(p(i,j,k))}
 
-Here p(I, j, k) is the probability of detecting an individual "i", at trap "j" and sample occasion "k". The probability 
+Here p(i, j, k) is the probability of detecting an individual "i", at trap "j" and sample occasion "k". The probability 
 p(i,j,k) is then related to suitable covariates of interest by applying a suitable transformation. In \pkg{SPACECAP} we make 
 use of the complementary log-log link transformation. Thus, the simplest possible model is expressed 
 
@@ -69,7 +69,7 @@ This particular function arises by considering the binary observations to be for
 frequency model (see Royle et al 2009 for details). That is, p(i,j,k) is the Pr(at least 1 encounter in a trap) under 
 the Poisson model. The most general model that \pkg{SPACECAP} presently allows is a model in which 
     
-    \deqn{cloglog(p(i,j,k)) = b0 + b1*x(i,j,k) + b2*dist(s(i),u(j))^2}
+    \deqn{cloglog(p(i,j,k)) = b0 + b1*x(i,j,k) + b2*f[dist(s(i),u(j))]}
     
 In this expression x(i,j,k) is an indicator of previous capture of individual i in trap j. Thus "b1" is a measure of 
 the behavioral response (see below for more discussion of this; also see Royle et al 2009 for more details).  The parameter 
@@ -91,8 +91,7 @@ lam0 = exp(b0), is the intercept in terms of expected encounter frequency; this 
        encounter rate of an individual "i" in trap location "j" at sampling occasion "k", whose home-range centre 
        is exactly at the trap location.  
 
-sigma = sqrt(1/b2), is the scale parameter of a bivariate normal encounter function (or an exponential, but this 
-        option isn't provided in \pkg{SPACECAP} yet). This may also be viewed as a "range parameter" of an animal. 
+sigma = sqrt(1/b2), is the scale parameter of a bivariate normal encounter function (or an exponential). This may also be viewed as a "range parameter" of an animal. 
         For a highly mobile animal, this value will tend to be large (eg:- tigers will have a higher sigma value 
         in comparison to civets)
 
@@ -101,12 +100,12 @@ beta = b1, is the regression coefficient that measures the behavioral response
 psi = the ratio of the number of animals actually present within S to the maximum allowable number 
       (set by the user during data augmentation - see below). 
 
-\bold{Installing PROGRAM SPACECAP Version 1.0.5}
+\bold{Installing PROGRAM SPACECAP Version 1.0.6}
 
 STEP 1: Download latest version of program \R (R Development Core Team)
 
 \pkg{SPACECAP} works within the \R programming environment, so your very first step will be to connect to the internet, 
-go to the website http://www.r-project.org, download and install the latest version of \R (R 2.9.2 or higher)  from the 
+go to the website http://www.r-project.org, download and install the latest version of \R (R 2.15.0 or higher)  from the 
 nearest CRAN mirror. 
 
 
@@ -416,7 +415,11 @@ summary_stats_<timestamp>.csv, which is also saved to the current directory. And
 parameters are all stored as jpeg files (.jpg) in the current working directory. \pkg{SPACECAP} also reports a file to 
 generate surface density map (called pixeldensities_val_<timestamp>.csv). This table reports estimates of pixel densities,
 and the corresponding X_COORD and Y_COORD of the pixels. The table can be then imported into any GIS platform to view the 
-pixel surface densities. 
+pixel surface densities.
+
+\pkg{SPACECAP} assesses the convergence of the MCMC run by using the Geweke (1992) diagnostic statistic which is estimated for all the
+estimated parameters. This statistic produces the z-score values so that a value of |z-score|>1.6 will imply that the MCMC analysis
+has not been run long enough. \pkg{SPACECAP} also assesses the adequacy of a model using the Bayesian P-value, as implemented in Royle et al. (2011) so that any value that is close to 0 or 1 would imply that the model is inadequate. 
 
 \bold{Further Developments in progress}
 
@@ -425,26 +428,28 @@ subsequent versions to be released in next few months. Some of the features we a
 
 1. Include the Poisson encounter process model. \cr
 2. Provide with the Hazard-Rate distance function model. \cr
-3. Generate FIT statistics for model selection using the Bayesian p-value. \cr
-4. Incorporate sex-specific encounters. \cr
+3. Incorporate sex-specific encounters. \cr
 
 \bold{Suggested Citation:}
 
-Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi, Singh, Devcharan Jathanna, N. Samba Kumar, K. Ullas Karanth (2011). 
+Arjun M. Gopalaswamy, Jeffrey A. Royle, James E. Hines, Pallavi, Singh, Devcharan Jathanna, N. Samba Kumar, K. Ullas Karanth (2011). 
 SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models. 
 Wildlife Conservation Society - India Program, Centre for Wildlife Studies, Bengaluru, India. 
-Version 1.0.5.
+Version 1.0.6.
 
 }
 
 \author{
-Arjun M. Gopalaswamy, Jeffrey A. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar and K. Ullas Karanth
+Arjun M. Gopalaswamy, Jeffrey A. Royle, James E. Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar and K. Ullas Karanth
 }
 
 \references{
 
 Borchers, D. L., and M. G. Efford. 2008. Spatially explicit maximum likelihood methods for capture-recapture studies. 
   \emph{Biometrics} 64:377-385.
+  
+Geweke, J. 1992. Evaluating the accuracy of sampling-based approaches to the calculation of posterior moments. In: Bayesian
+  Statistics, \bold{4}(Bernardo, J. M. et al., Eds), 169-193. Oxford University Press.
 
 Karanth, K. U., and J. D. Nichols. 1998. Estimation of tiger densities in India using photographic 
   captures and recaptures. \emph{Ecology} \bold{79}:2852-2862.
@@ -452,13 +457,15 @@ Karanth, K. U., and J. D. Nichols. 1998. Estimation of tiger densities in India 
 Parmenter, R., et al. 2003. Small-mammal density estimation: a field comparison of grid-based
   vs. web-based density estimators. \emph{Ecological Monographs} \bold{73}:1-26.
 
-R Development Core Team.2005. R: A language and environment for statistical computing. R Foundation for Statistical 
+R Development Core Team.2009. R: A language and environment for statistical computing. R Foundation for Statistical 
   Computing,  Vienna, Austria. ISBN 3-900051-07-0, URL http://www.R-project.org.
 
 Royle, J. A., R. M. Dorazio, and W. A. Link. 2007. Analysis of multinomial models with unknown index using data 
   augmentation. \emph{Journal of Computational and Graphical Statistics} \bold{16}:67-85. 
 
 Royle, J. A., K. U. Karanth, A. M. Gopalaswamy and N. S. Kumar. 2009. Bayesian inference in camera trapping studies for a class of spatial capture-recapture models. \emph{Ecology} \bold{90(11)}, 3233-3244.
+
+Royle, J. A., M. Kery and J. Guelat. 2011. Spatial capture-recapture models for search-encounter data. \emph{Methods in Ecology and Evolution} \bold{2}:602-611.
 
 Trolle, M., and M. Kery. 2003. Estimation of ocelot density in the Pantanal using capture-
             recapture analysis of camera trapping data. \emph{Journal of Mammalogy} \bold{84}:607-614.

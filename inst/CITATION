@@ -6,7 +6,7 @@ citEntry(entry="Manual",
 title = "A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models",
 author = personList(as.person("Arjun M. Gopalaswamy"),
                     as.person("Andrew J. Royle"),
-		    as.person("Jim Hines"),
+		    as.person("James E. Hines"),
 		    as.person("Pallavi Singh"),
  		    as.person("Devcharan Jathanna"),	
                     as.person("N. Samba Kumar"),
@@ -14,7 +14,7 @@ author = personList(as.person("Arjun M. Gopalaswamy"),
 year = year,
 note = vers,
 textVersion =
-paste("Arjun M. Gopalaswamy, Andrew J. Royle, Jim Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar
+paste("Arjun M. Gopalaswamy, Andrew J. Royle, James E. Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar
 and K. Ullas Karanth (",
 year,
 "). SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models. ",

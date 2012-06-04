@@ -2,7 +2,8 @@ SPACECAP <- function()
 {
     # Loads tcktk package, TeachingDemos and the tck package Tktable
     require(tcltk) 
-    library(TeachingDemos) 
+    library(TeachingDemos)
+	require(coda)
     tclRequire("Tktable") 
   
     # Create a top level window from a tkwidget
@@ -330,6 +331,8 @@ SPACECAP <- function()
         dimnames(out)<-list(NULL,c("sigma","lam0","beta","psi","Nsuper"))
         zout<-matrix(NA,nrow=(ni-burn)/skip,ncol=M)
         Sout<-matrix(NA,nrow=(ni-burn)/skip,ncol=M)
+		gof.new<-gof.data<-rep(NA,(ni-burn)/skip)
+		
 #		indlocs<-matrix(NA,nrow=(ni-burn)/skip,ncol=M)
 #		pixcount<-c(rep(0, length(grid2500[ ,2])))
 #		pixdensity<-c(rep(0, length(pixcount)))
@@ -544,7 +547,25 @@ SPACECAP <- function()
           ########################
           ########################
           ########################
-          
+          ## Jan 25 GoF stuff right here for JWM paper
+          ## 09/19/2011
+          #####
+          # mean of "real individuals" (not fixed zeros)
+          # realguys<- z[indid]==1
+		  # cat(sum(realguys)," real observations for GoF",fill=TRUE)
+		  
+		  logmu<-loglam0 + Mb*beta*prevcap - ((12.5*bsigma)/(sigma^2))*((c1+c2)^(dexp*0.5))
+		  mu<- ( 1-exp(-exp(logmu)))*z[indid]  # zeros out the z=0 guys so they contribute nothing
+		  newy<-rbinom(length(mu),1,mu)
+		  gof.stats<-cbind(y,newy,mu)
+		  gof.stats<-aggregate(gof.stats,list(indid),sum)
+		  gof.data[m]<- sum((sqrt(gof.stats[,2])-sqrt(gof.stats[,4]))[z==1]^2)
+		  gof.new[m]<- sum((sqrt(gof.stats[,3])-sqrt(gof.stats[,4]))[z==1]^2)
+		  
+          #####
+          #####
+          #####
+          #####
           ##
           ## save output if iteration is past burn-in and using a thin-rate of "skip"
           ##
@@ -552,6 +573,7 @@ SPACECAP <- function()
           ## PS : Adding an additional condition to check if skip==1
           if( (i>burn) & ((i%%skip == 1) | (skip ==1)) )
           {
+             
             zout[m,]<-z
             Sout[m,]<- centers
             out[m,]<-c(sigma,lam0,beta,psi,sum(z))
@@ -586,6 +608,9 @@ SPACECAP <- function()
           }
 
       } # End of the iterations loop
+
+		
+		
 		
 ########## Output related START ###########
       ## Time stamp
@@ -671,20 +696,58 @@ SPACECAP <- function()
       colnames=c("Posterior_Mean", "Posterior_SD", "95%_Lower_HPD_Level", "95%_Upper_HPD_Level")
       dim(colnames)<-c(1,4)
       resTable=cbind(rownames,rbind(colnames,resTable))
+	 
+### Calculating Geweke diagnostic for assessing convergence ###
+	  outMCMC<-as.mcmc(out)
+	  gewekeDiag<-tryCatch(geweke.diag(outMCMC), error=function(e) NULL)
+      sink(file=paste(folderName,"/GewekeDiagnostic_",ts,".txt", sep=""),split=T)
+	  cat("Results of the Geweke Diagnostic:")
+	  print(gewekeDiag)
+	  sink()
+########### GUI START ################      
+		{
+			statusText <<- paste("Geweke diagnostic for assessing MCMC convergence is computed and results stored in:", getwd(), "/", folderName, "\n", sep="")
+		}
+		tkinsert(statusWin, "end", statusText)
+########### GUI END ##################
+### Calculation of Bayesian P-value ###
+		gofarray<-cbind(gof.data,gof.new)
+		sink(file=paste(folderName,"/BayesPvalue_",ts,".txt", sep=""),split=T)
+		cat("Bayesian p-value based on individual encounters: ",mean(gofarray[,1]>gofarray[,2]), fill=TRUE)
+		sink()
+########### GUI START ################      
+			{
+			statusText <<- paste("Bayesian P-value for assessing model fit is computed and results stored in:", getwd(), "/", folderName, "\n", sep="")
+			}
+		tkinsert(statusWin, "end", statusText)
+########### GUI END ##################				
+		
+	  ### Display of prior and posterior densities of graphs ###
+		lnames<-c('Prior distribution', 'Posterior distribution')
+		priorDens<-c(rep(0,5))
+		priorDensVect<-matrix(data=NA,length(out[,1]),5)
 
-      if(Mb == 0)   #Rashmi: file has been renamed filename and filename has been renamed as nameoffile to avoid partial argument matching warnings
+      if(Mb == 0)   #Rashmi: nameoffile has been renamed as nameoffile to avoid partial argument matching warnings
       {
          for ( i in 1:2 ) {
         nameoffile = paste("./", folderName, "/density_", rownames[i+1,1], "_", ts, ".jpeg", sep="")
         jpeg(filename=nameoffile)
-        plot(density(out[,i]), main=rownames[i+1,1])
-        dev.off()      
+        plot(density(out[,i]), main=rownames[i+1,1], col="blue")
+			 priorDens[i]<-1/(max(out[,i])-min(out[,i]))
+			 priorDensVect[,i]<-c(rep(priorDens[i],length(out[,i])))
+		lines(out[,i],priorDensVect[,i],pch=19,col="red")
+		legend('topright', lnames, col = c("red","blue"), lty = 1)
+		dev.off()      
         }
         
         for ( i in 4:5 ) {
         nameoffile = paste("./", folderName, "/density_", rownames[i+1,1], "_", ts, ".jpeg", sep="")
         jpeg(filename=nameoffile)
-        plot(density(out[,i]), main=rownames[i+1,1])
+		plot(density(out[,i]), main=rownames[i+1,1], col="blue")
+			priorDens[i]<-1/(max(out[,i])-min(out[,i]))
+			priorDensVect[,i]<-c(rep(priorDens[i],length(out[,i])))
+		lines(out[,i],priorDensVect[,i],pch=19,col="red")
+		legend('topright', lnames, col = c("red","blue"), lty = 1)
         dev.off()      
         }
       }
@@ -693,7 +756,11 @@ SPACECAP <- function()
          for ( i in 1:5 ) {
         nameoffile = paste("./", folderName, "/density_", rownames[i+1,1], "_", ts, ".jpeg", sep="")
         jpeg(filename=nameoffile)
-        plot(density(out[,i]), main=rownames[i+1,1])
+		plot(density(out[,i]), main=rownames[i+1,1], col="blue")
+			 priorDens[i]<-1/(max(out[,i])-min(out[,i]))
+			 priorDensVect[,i]<-c(rep(priorDens[i],length(out[,i])))
+		lines(out[,i],priorDensVect[,i],pch=19,col="red")
+		legend('topright', lnames, col = c("red","blue"), lty = 1)
         dev.off()      
         }
       }
@@ -719,8 +786,8 @@ SPACECAP <- function()
        
       tkinsert(statusWin, "end", statusText)
 	  
-	  statusText <<- paste("Spatial plot of animal densities saved in jpeg format to ", getwd(), "/", folderName, "\n", sep="")
-	  tkinsert(statusWin, "end", statusText)
+#	  statusText <<- paste("Spatial plot of animal densities saved in jpeg format to ", getwd(), "/", folderName, "\n", sep="")
+#	  tkinsert(statusWin, "end", statusText)
 ########### GUI related END ##################
 ########### Output related START ##############
 	  tclarray <- tclArray()
@@ -875,7 +942,7 @@ SPACECAP <- function()
         tkmessageBox(message=geterrmessage(),icon="error",type="ok") 
     }
    
-    tkwm.title(tt,"SPACECAP Ver 1.0.5")
+    tkwm.title(tt,"SPACECAP Ver 1.0.6")
   
   	topMenu <- tkmenu(tt)
   	tkconfigure(tt, menu=topMenu)
