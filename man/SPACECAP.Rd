@@ -1,17 +1,12 @@
 \name{SPACECAP}
-\alias{SPACECAP}                                                      
+\alias{SPACECAP}
 
-\title{A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models}
+\title{Fits spatially-explicit capture recapture models}
 
 \description{
-\pkg{SPACECAP} is a user-friendly software package for estimating animal densities using closed model capture-recapture 
-sampling specifically based on photographic captures. It implements a new generation of spatially explicit capture-recapture 
-models developed in a recent paper, Royle et al.(2009), cited below. Spatially explicit capture-recapture models implemented in 
-\pkg{SPACECAP} directly estimate animal density by explicitly using the information on capture histories in combination 
-with spatial locations of captures under a unified Bayesian modeling framework. This approach offers advantage such as: 
-substantially dealing with problems posed by individual heterogeneity in capture probabilities in conventional 
-capture-recapture analyses. It also offers non-asymptotic inferences which are more appropriate for small samples of 
-capture data typical of photo-capture studies.
+
+Function \code{SPACECAP} is the workhorse of the pkg{SPACECAP} package. It opens a Graphical User Interface (GUI) where the user selects the files containing the capture-recapture data, selects options for the model to run, and specifies the variables for the MCMC estimation. MCMC samples from the posterior distributions of the parameters are generated and saved as files, together with summary statistics and kernel density plots.
+
 }
 
 \usage{
@@ -20,215 +15,93 @@ SPACECAP()
 
 \details{
 
-\bold{PROGRAM SPACECAP Version 1.0.6}
+%%% Mike moved the description of the model to its own page together with the priors.
 
-\bold{Introduction}
+\bold{Installing SPACECAP Version 1.1.0}
 
-\pkg{SPACECAP}, is a user-friendly software package for estimating animal densities using closed model capture-recapture 
-sampling specifically based on photographic captures. It implements a new generation of spatially explicit 
-capture-recapture models developed in a recent paper titled 
-"Bayesian Inference in Camera Trapping Studies for a Class of Spatially Explicit Capture Models" by J. A  Royle, 
-K. U. Karanth, A. M. Gopalaswamy, and N. S. Kumar, published in \emph{Ecology},  \bold{90(11)}, 2009, pp. 3233-3244.
+%% This should work for all platforms.
 
-The conventional approach to the analysis of animal density from camera trap surveys is to apply closed 
-capture-recapture model analyses, and, then convert resulting estimates of abundances to densities using a wide range 
-of essentially ad hoc methods. For example, a standard practice in camera trapping studies has been to use auxiliary 
-capture location information to estimate the mean or maximum distance moved by the study species as a basis to apply a 
-"buffer width" around the trap array or, to use various other heuristic "adjustments" (Wilson and Anderson 1985a, b, 
-Karanth and Nichols 1998, Parmenter et al. 2003, Trolle and Kery 2003) to estimate the effectively sampled area. While 
-these approaches appear to work adequately in practice, little had been known about the range of conditions under which 
-they work well. This is because most real world study situations involve study area of odd shapes and sizes and difficult 
-terrain that makes setting camera traps challenging and conditions assumed by ad hoc approaches may not apply. 
+You must have a recent version (R 2.15.3 or higher) of program \R installed on your computer. If necessary, go to \url{http://www.r-project.org/}, select a mirror, then download and install R for your platform.
 
-Spatially explicit capture-recapture models implemented in \pkg{SPACECAP} package directly estimate animal density by 
-explicitly using the information on capture histories in combination with spatial locations of captures under a unified 
-Bayesian modeling framework. This approach offers advantage such as: substantially dealing with problems posed by 
-individual heterogeneity in capture probabilities in conventional capture-recapture analyses. It also offers 
-non-asymptotic inferences which are more appropriate for small samples of capture data typical of photo-capture studies. 
-Further technical details about the models and analyses can be obtained from the paper by Royle et al. (2009), cited above. We also note another spatially explicit modeling and estimation approach based on conventional likelihood based inference that is available (Borchers and Efford 2008).
+Launch \R, and at the ">" prompt type
 
-\bold{The Spatial Capture-Recapture Model and its Parameters}
+\code{install.packages("SPACECAP")}
 
-The model considered in the current version of \pkg{SPACECAP} applies to binary observations y(i,j,k) for individual "i",  
-trap "j" and sample occasion (e.g., night) "k". The model is a type of binary regression model, similar to logistic 
-regression, in which 
+and press Enter. \code{SPACECAP} must be upper case and in quotes. You will be asked to select a CRAN mirror and may need to confirm that \R should create a personal library for your packages. \pkg{SPACECAP} depends on \pkg{coda}, and that should be installed automatically at the same time. You only need to install \pkg{SPACECAP} once.
 
-    \deqn{y(i,j,k) ~ Bernoulli(p(i,j,k))}
+\pkg{SPACECAP} stores its output in subfolders of \R's working directory. You can set the working directory with the File > Change dir... option in the console or by typing \code{setwd(choose.dir())} and browsing to the folder you want the output to go to.
 
-Here p(i, j, k) is the probability of detecting an individual "i", at trap "j" and sample occasion "k". The probability 
-p(i,j,k) is then related to suitable covariates of interest by applying a suitable transformation. In \pkg{SPACECAP} we make 
-use of the complementary log-log link transformation. Thus, the simplest possible model is expressed 
+To launch the \pkg{SPACECAP} GUI, you need to have \R open, then at the ">" prompt enter
 
-    \deqn{cloglog(p(i,j,k)) = b0} 
-        
-where b0 is a parameter to be estimated. By taking the inverse of the cloglog transformation 
-    
-    \deqn{p(i,j,k) = 1-exp(-exp(b0))} 
-    
-This particular function arises by considering the binary observations to be formally reduced from a Poisson encounter 
-frequency model (see Royle et al 2009 for details). That is, p(i,j,k) is the Pr(at least 1 encounter in a trap) under 
-the Poisson model. The most general model that \pkg{SPACECAP} presently allows is a model in which 
-    
-    \deqn{cloglog(p(i,j,k)) = b0 + b1*x(i,j,k) + b2*f[dist(s(i),u(j))]}
-    
-In this expression x(i,j,k) is an indicator of previous capture of individual i in trap j. Thus "b1" is a measure of 
-the behavioral response (see below for more discussion of this; also see Royle et al 2009 for more details).  The parameter 
-b2 is a regression coefficient on the effect of distance between individual activity center s(i) and the location of trap j, 
-u(j). b2 is constrained to be < 0 implying that the probability of encountering an individual in a trap decreases as the 
-distance between the individual and the trap increases. In the model, s(i) are the collection of animal locations within a 
-prescribed region S (this is provided by the user - see below). S is referred to subsequently as the state-space of the 
-random variables s(i). 
+\code{library(SPACECAP)} \cr
+\code{SPACECAP()}
 
-In \pkg{SPACECAP}, the parameter N is the population size of individuals - the number of activity centers located in S 
-(see further discussion of this below).  
+Note the empty parentheses \code{()} after \code{SPACECAP} in the second line.
 
-In \pkg{SPACECAP}, N is reported under the name Nsuper. \cr
-Density, D = N/||S|| where ||S|| is the area of the state-space. The units for Density, D is animals/100 km2. 
+You will not be able to work in the \R Console while the the \code{SPACECAP} GUI is open.
+If you want to work in \R while the analysis is running, you can open another
+instance of the \R Console. You can even have several \code{SPACECAP} analyses
+running at the same time, by launching them from different \R instances, and they will
+use different cores on a multicore computer.
 
-\pkg{SPACECAP} also reports several derived parameters: 
-
-lam0 = exp(b0), is the intercept in terms of expected encounter frequency; this may be thought of as the expected 
-       encounter rate of an individual "i" in trap location "j" at sampling occasion "k", whose home-range centre 
-       is exactly at the trap location.  
-
-sigma = sqrt(1/b2), is the scale parameter of a bivariate normal encounter function (or an exponential). This may also be viewed as a "range parameter" of an animal. 
-        For a highly mobile animal, this value will tend to be large (eg:- tigers will have a higher sigma value 
-        in comparison to civets)
-
-beta = b1, is the regression coefficient that measures the behavioral response
-
-psi = the ratio of the number of animals actually present within S to the maximum allowable number 
-      (set by the user during data augmentation - see below). 
-
-\bold{Installing PROGRAM SPACECAP Version 1.0.6}
-
-STEP 1: Download latest version of program \R (R Development Core Team)
-
-\pkg{SPACECAP} works within the \R programming environment, so your very first step will be to connect to the internet, 
-go to the website http://www.r-project.org, download and install the latest version of \R (R 2.15.0 or higher)  from the 
-nearest CRAN mirror. 
-
-
-STEP 2: Download the package \pkg{SPACECAP} to your computer.
-
-When you launch \R, go to Packages->Install package(s), once again select your nearest CRAN mirror and select package 
-\pkg{SPACECAP} for installation. 
-
-
-STEP 3: OPEN the package \pkg{SPACECAP}
-
-In the \R environment, go to Packages->Load package, select \pkg{SPACECAP} and load the package. 
-
-
-STEP 4: Launching \pkg{SPACECAP}
-
-In the \R environment, at the prompt ">", type the command SPACECAP(). 
-This will launch the Graphic-User Interface of SPACECAP and you are now set to begin the Bayesian Spatially-Explicit 
-Capture-Recapture (SECR) analysis of your camera trap survey data.
-                                                                  
 \bold{SECR Analysis using \pkg{SPACECAP}}
 
-Running an SECR Analysis in \pkg{SPACECAP} essentially involves four simple steps: 
+Running an SECR Analysis in \pkg{SPACECAP} involves four steps:
 
 1. Setting up the input files \cr
 2. Selecting the appropriate model combination \cr
 3. Selecting the Markov chain Monte Carlo (MCMC) settings \cr
-4. Hitting the "RUN" button. \cr
-
+4. Clicking "Run" on the main menu bar. \cr
 
 \bold{STEP 1: SETTING UP THE INPUT FILES FOR ANALYSIS}
 
-\pkg{SPACECAP} requires you to first create three input files and store these files at a suitable location on your computer. 
-These files are:
+\pkg{SPACECAP} requires three input files:
 
-1. Animal Capture Details File (Animal ID no., Trap Location no., Sampling Occasion no.) 
+1. Animal Capture File (Animal ID, trap ID, capture occasion)
 
-2. Trap Deployment details File (Trap Spatial Location, Deployment Activity, Sampling Occasion no.)
+2. Trap Deployment File (Trap ID, location and deployment record)
 
-3. State-space details File (describing the Potential Animal Home Range Center Details in terms of their spatial 
-location and habitat suitability indicator for these home range centers)
+3. State-space File (the Potential Animal Home Range Center locations and habitat suitability indicator for these home range centers)
 
-These three raw data files can most easily be created using spreadsheet applications like Microsoft EXCEL, 
-OpenOffice or other software you are comfortable with. However, eventually, all files must be saved in an ASCII comma 
-separated format \emph{(.csv)}, because \pkg{SPACECAP} can only read these types of input files. 
+See the \link{Example files} page for more details and examples.
 
-Upon launching \pkg{SPACECAP}, you will notice on the input data panel, three separate buttons to load the three input 
-data files. Pressing of these buttons will help you locate the corresponding input files using your desktop browser 
-(like Windows Explorer or Finder). 
+These three data files can be created using spreadsheet applications such as Microsoft EXCEL or LibreOffice Calc. They must be saved in ASCII comma
+separated format \emph{(.csv)}, because \pkg{SPACECAP} can only read these types of input files.
 
-\bold{INPUT FILE 1: Animal Capture Details} 
+\bold{INPUT FILE 1: Animal Capture Details}
 
-The input file containing individual animal capture histories and locations consists of a 3-column table, each column 
-representing the Location Number, the Animal Identity Number and the Sampling Occasion number, strictly in that order. 
-Please note that these are all "number" fields. Please not enter labels containing alpha-numeric characters such as 
-"CAT-123", "PLACE-100" or "January 2009" etc. for these fields, because \pkg{SPACECAP} will not recognize them. Use simple 
-integer numbers. Each unique individual captured during camera trap sampling should be given a unique identification 
-number, ranging from 1 to n, where n is the total number of unique individuals caught during the camera trap survey. 
+This is a table with 3 columns: Location Number, the Animal Identity Number and the Sampling Occasion number, in that order.
+Note that these are all "number" fields: use simple integer numbers.
 
-Duration of the overall survey is determined by species biology in order to meet the assumption of demographic closure. 
-The duration of sampling occasions (or periods) will, in turn, be based on how many such occasions are there in the 
-survey duration. 
+Each individual captured should be given a unique identification number, ranging from 1 to n, where n is the total number of individuals included in this file. In the example below, the records have been sorted by ANIMAL_ID to facilitate checking that no numbers are missing.
 
-Because of shortage or camera traps or logistical reasons in many camera trap surveys, the study area is quite often 
-divided into blocks or sub-units and camera trapping is conducted sequentially in these (Karanth and Nichols 2002). 
-With data from conventional capture-recapture analyses the resulting capture history matrix is artificially constructed 
-to ensure that assumption that camera trap survey simultaneously covers the entire area on each sampling occasion 
-(See Karanth and Nichols 2002 page 132-133).
+Location Numbers must correspond to the numbers in the Trap Deployment file.
 
-However, since spatial locations of traps are explicitly incorporated into capture-recapture modeling in \pkg{SPACECAP} this 
-artificial construction of sampling occasions is not required, which greatly enhances flexibility in survey and analyses. 
-Each sampling occasion must have a unique identity number, ranging from 1: T, where T is the total number of sampling 
-occasions. We note that each sampling occasion need not cover the entire survey area. 
-
-Each camera trap location must be given a unique identification number, ranging from 1: J, where J is the total number 
-of camera trap locations used in the survey. 
-
-Assuming a camera trapping survey was conducted from 10 Jan 2009 to 30 Jan 2009, and, we treat each day as a sampling 
-occasion, we end up with 20 sampling occasions. Let us assume there were 16 camera trap locations used in this survey and 
-for logistical reasons the study area was partitioned into 4 blocks and each block contained 4 camera trap locations. 
-Let us assume further that camera traps were deployed for 5 successive days in each block covering each of the four 
-blocks successively in 20 days.  Assuming only 6 animals were photo-captured and identified, the \bold{INPUT FILE 1} for 
-\pkg{SPACECAP} would look like:
+If only 6 animals were photo-captured and identified, the \bold{INPUT FILE 1} for
+\pkg{SPACECAP} might look like this:
 
 \tabular{lll}{
 LOC_ID    \tab  ANIMAL_ID \tab  SO  \cr
+11   \tab  1 \tab  14  \cr
+15   \tab  2 \tab  12  \cr
+9    \tab  3 \tab  20  \cr
 1    \tab  4 \tab  17  \cr
 5    \tab  5 \tab  13  \cr
 7    \tab  6 \tab  17  \cr
 8    \tab  6 \tab  16  \cr
-9    \tab  3 \tab  20  \cr
-11   \tab  1 \tab  14  \cr
-15   \tab  2 \tab  12  \cr
 }
 
-The first data row tells us that Animal ID no 4 was captured at Location ID 1 on the 17th sampling occasion. 
-In your spreadsheet application, you can build up the animal capture details data as per the above format 
-(please make sure that you INCLUDE the header row with the exact titles on column headings as shown above). 
-The file must eventually be saved as a \emph{.csv} file (for example, "captures.csv") and saved in the working directory.
-It must be ensured that all Animal ID numbers must be sequenced such that no number is missed in the input file.
+For example, the first row of data tells us that Animal ID no 1 was captured at Location ID 11 on the 14th sampling occasion.
 
-\bold{INPUT FILE 2: Trap Deployment Details} 
+The first row of the file must have the exact column headings as shown above, or it will not be recognized by \pkg{SPACECAP}.
 
-In many camera trap sample surveys of animals, all camera trap stations in the study area 
-may not be operational simultaneously for logistical reasons (for example: limited number of cameras or manpower). 
-Therefore, the trap deployment details input file provides \pkg{SPACECAP} with the information on the dates when each camera 
-trap location was active and operational during the survey. Some trap-nights or trap-days of capture data may be "lost" 
-as a result of camera trap failure, theft, vandalism or animal-damage. This type of trap activity/passivity information 
-can also be effectively fed into and used in \pkg{SPACECAP}. The trap deployment details file records both these types of 
-information, thus accurately accounting for trapping effort. 
+\bold{INPUT FILE 2: Trap Deployment Details}
 
-The trap deployment data are stored in a two dimensional matrix of camera trap locations and sampling occasions in a 
-binary, 0/1 format, where 0 indicates that a particular camera trap station was NOT operational on a particular sampling 
-occasion, and 1 indicates that it was operational. The trap location is denoted in 3 columns in the table representing the 
-Trap Location ID no., the spatial location expressed in X and Y-coordinates (in Universal Transverse Mercator UTM 
-projection system in GIS). It is important that these coordinates are represented in the UTM projection system, because 
-it is used for all distance measurements and computations in \pkg{SPACECAP}. 
+The first column of this file has the Location Number. The next two columns have the X and Y coordinates of the trap location: see the example below. Use a projected coordinate system (ie, in meters, not degrees), such as UTM (Universal Transverse Mercator) or your national grid system.
 
-We illustrate trap deployment data entry using a Table for the same example of animal capture details described above. 
-Please recall that the camera trapping survey was conducted with a camera trap array of 16 trap locations, deployed in 
-4 blocks with 4 camera trap sites in each block. The camera trap survey was conducted over 20 sampling occasions, during 
-which each trapping block was sampled over 5 sampling occasions. The resulting TRAP DEPLOYMENT DATA file would look like 
-the one below:   
+After these first three columns, there is one column for each trapping occasion. Here, "1" means that a trap was operating at that location on that occasion, "0" means that no trap was operating. You do not have to have a trap at every location for the whole period. In particular, trap malfunction, theft, vandalism, etc. can be accounted for.
+
+An example TRAP DEPLOYMENT DATA file is shown below. This file has 16 locations, but there were only 4 traps, which were moved between locations.
 
 \tabular{lllllllllllllllllllllll}{
 LOC_ID \tab X_Coord \tab Y_Coord \tab 1 \tab 2 \tab 3 \tab 4 \tab 5 \tab 6 \tab 7 \tab 8 \tab 9 \tab 10 \tab 11 \tab 12 \tab 13 \tab 14 \tab 15 \tab 16 \tab 17 \tab 18 \tab 19 \tab 20 \cr
@@ -250,45 +123,43 @@ LOC_ID \tab X_Coord \tab Y_Coord \tab 1 \tab 2 \tab 3 \tab 4 \tab 5 \tab 6 \tab 
 16 \tab 629229 \tab 1319793 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 0 \tab 1 \tab 1 \tab 1 \tab 1 \tab 1 \cr
 }
 
-The table shows that the camera trap sites (Loc 1-4) were operational during sampling occasions 1-5 but were not 
-operational on the remaining sampling occasions 6-20. Additionally, an odd '0' corresponding to Loc 3 and sampling 
-occasion 3 indicates that a trap night was "lost" here. 
+The table shows that the first four locations were operational during sampling occasions 1-5, except that the trap at location 3 was not working on occasion 4. No traps were operational at these sites on occasions 6 to 20.
 
-The trap deployment details file should be constructed exactly as above in your spreadsheet application. 
-It must then be converted to a comma separated ASCII file (.csv file) with an appropriate filename (e.g. traps .csv) 
-in the working directory accessed by \pkg{SPACECAP}. 
+Again, the first row must have column headings as shown in the example above.
 
-\bold{INPUT FILE 3: Potential Home-Range Centers}
+\bold{INPUT FILE 3: Potential Home Range Centers}
 
-In \pkg{SPACECAP} analyses, the surveyed area containing the camera trap array combined with an extended area surrounding it, 
-known as the "state-space" of the underlying point process, say S, which is represented by a large number of equally 
-spaced points in the form of a very fine mesh. These points are visualized as representing all possible potential activity 
-centers (or home range centers) of all the animals in the animal population being surveyed. This fine grid or mesh of 
-points can be easily generated using a GIS software (like ArcView, MAPINFO etc.) as briefly described below. We view this 
-as an approximation to an underlying continuous state-space which, in practice, would normally be difficult to 
-characterize for computational purposes except in very basic situations where regular polygons might be reasonable. 
-While estimates of population size, N, will be sensitive to the size and extent of the state-space, the estimated density 
-D=N/||S|| is invariant as the extent of the state-space increases. Thus, S should be chosen to be sufficiently large so as 
-to ensure stability of the density estimate. Conceptually, this occurs (under the models fitted in \pkg{SPACECAP}) by choosing S 
-to buffer the trap array by 2 or 3 times the encounter probability scale parameter. 
+This file contains the locations of possible home range centers for all
+the animals which might be detected by our traps. These are represented
+by a large number of equally spaced points or \emph{pixels} in the form
+of a grid. This grid can be produced by GIS software such as ArcView or
+QGIS. See the figure on the \link{Example files} page.
 
-First a rectangle is formed by connecting the outermost camera trap locations using the GIS software of your choice. This 
-rectangle is called the "Minimum area rectangle". A buffer distance (which is sufficiently large to ensure that no 
-individual animal outside of the buffered region has any probability of being photo-captured by the camera traps in the 
-array during the survey) is added to the rectangle around encompassing the trap array. Thereafter, using GIS numerous 
-equally spaced points representing home range centers are generated for this extended area. 
-In practice, some of these potential home range centers in the mesh may end up in habitats known to be entirely unsuitable 
-for the study species (say in the middle of a village, for tiger data). \pkg{SPACECAP} appropriately deals with this problem 
-because "Grid Cells" input file clearly specifies which of these potential home range/activity centers lie within suitable 
-habitat and which do not. 
+To generate this file, you need to decide (1) the extent of the state space, (2) the size of the pixels, and (3) what habitat would be suitable as a home range center for your species.
 
-The potential home-range centers data file essentially consists of a 3 column table. The first two columns are the X and Y 
-coordinates (both in UTM projection system) of all the potential activity centers (the equally spaced points generated 
-from your GIS software) and the third column is a habitat suitability indicator column, indicated with 1s if the potential 
-activity centers lies within suitable species habitat or with 0s otherwise. The format of this file is as given below 
-(this example is a small subset of the actual data set, purely for illustration):
+The extent of the area covered by the file must be big enough to include
+the home ranges of animals with a reasonable probability of being
+captured. Under the
+Gaussian hazard model,
+animals with home range centers more than 3 or 4 times the detection
+function scale parameter, sigma, from the nearest trap have a negligable
+probability of being caught. For the negative exponential model we think
+3-4x sigma should also be adequate but recommend checking this for
+specific data sets.
+Use a guestimate of the home range radius for a preliminary run, and check against the value of sigma produced (see \bold{Things to check} below).
 
-Example of potential home-range centers input file format:
+In principle, the state space cannot be too large, but in practice a large area will need a higher value for data augmentation (see below) and will run more slowly. Note that the estimate of density does not depend on the area of the state space, provided that is large enough.
+
+Pixel size is related to home range size. For the animals captured, the
+software will estimate the location of the home range center, but has
+only pixel centers to choose from. This clearly would not work well if
+pixels were larger than home ranges. Pixel areas roughly (1/16) - (1/32)
+of a typical home range area would be appropriate. %%%%% Is this right? With the current version, every pixel has approx. 300 neighbours irrespective of how coarse or fine the grid is, so this should not affect run time.
+%% I [Andy] changed to 1/16 - 1/32 which I think is pretty stable in most cases.
+
+Note the area of the pixel used, as that must be entered when running \pkg{SPACECAP} and a mistake there will result in a wrong answer for the density.
+
+The potential home-range centers data file consists of a 3 column table. The first two columns are the X and Y coordinates (using the same coordinate system as the trap location file) of the center of each pixel in the state-space. The third column is a habitat suitability indicator, with "1" if the pixel centre lies within suitable habitat or with "0" otherwise. The first few rows of such a file is given below (the actual file will have thousands of rows):
 
 \tabular{lll}{
 X_COORD    \tab  Y_COORD \tab  HABITAT  \cr
@@ -307,174 +178,134 @@ X_COORD    \tab  Y_COORD \tab  HABITAT  \cr
 618545.7    \tab  1299606 \tab  1  \cr
 }
 
-Such a table must be created for all the potential activity centers (this will be a very large table) and saved as a 
-comma delimited ASCII file (.csv file) with an appropriate name, for example, centers.csv, and saved in the working 
-directory.
+Again, the column headings in the first row must be exactly as shown in the example.
 
-In the input data panel, there is a text box for specifying the area of potential home-range centers. This area may be 
-imagined to be composed of a point at the centre of a square, which we call "pixel". Please enter the pixel size area 
-used by the GIS software in this box. The "fineness of the mesh" determined by the pixel size used for spacing of 
-potential home range centers is dictated by species biology (e.g. a few hundred meters for tigers but only a few meters 
-for civets). Caution should be exercised here to not specify a state-space that is too fine because the MCMC algorithm 
-run time increases linearly with the size of the state-space grid. Regarding this as a discrete approximation to some 
-underlying continuous state-space probably justifies a reasonably coarse state-space grid.  Regardless of the desired 
-state-space dimension, we recommend carrying out a trial run with a coarse grid to evaluate the performance.
+\bold{Entering the file names in \pkg{SPACECAP}}
 
+The "Input Data" panel is the top left portion of the \pkg{SPACECAP} window. Use the Browse buttons to select each of the three input files in turn.
 
-Please load these files using on screen 'buttons' provided in the input data panel of \pkg{SPACECAP}. Please specify the pixel 
-size area of a potential home-range center (as created in input file 3 above) in square kilometers and then click on "OK". 
-Please check the frame at the bottom for status or error messages. In case you wish to edit your selection, please click 
-on the "Edit" button and start the selection all over again. 
+Enter the area of the pixels created for the potential home range centers file (in sq km) in the box below the file names. %%% it must be in sq km.
 
-Proceed to STEP 2, the Model Definition frame.
+Click on "OK" in the "Input Data" panel and check the frame at the bottom of the window for status or error messages. To edit your selection, just click on the "Edit" button and start the selection all over again.
 
 \bold{STEP 2: SELECTING THE APPROPRIATE MODEL COMBINATION FOR ANALYSIS}
 
-The Model Definition panel of \pkg{SPACECAP} consists of a set of options to select an appropriate model combination for the 
-Spatial-Capture Recapture Analysis. These are simple radio buttons indicating each model choice. Some of these model 
-options that are "grayed out" are expected to be made available in future developments of \pkg{SPACECAP}. 
+The Model Definition panel of \pkg{SPACECAP} consists of a set of options to select an appropriate model combination for the Spatial-Capture Recapture Analysis. Model options that are "grayed out" are not available with the current version of \pkg{SPACECAP}. %% There'll be future developments?
+%% Maybe now Arjun's back on board.
 
 The model choices are:
 
 1.	\bold{Trap response present OR Trap response absent}
-Selecting "Trap response present " option runs the behavioral response option (equivalent to Model "Mb"). Select the 
-"Trap response absent" option if you decide otherwise.  This model implements a local or "trap-specific" behavioral 
-response under which the probability of encounter in a trap increases subsequent to initial capture in that trap. This is 
-in contrast to the conventional "global" behavioral response which parameterizes a constant increase in encounter 
-probability (on the logit scale, usually) that is not trap specific. 
+The "Trap response present" option implements a local or "trap-specific" behavioral
+response under which the probability of encounter in a trap increases (or decreases) after initial capture in that specific location. This is
+in contrast to the conventional "global" behavioral response which implies a response to all traps everywhere after being caught once.
 
 2.   \bold{Spatial Capture-Recapture OR Non-spatial Capture-Recapture}
-Select "Spatial Capture-Recapture" for running a spatially explicit capture-recapture analysis, or 
-"Non-spatial Capture-Recapture" for running a conventional capture-recapture analysis (this is equivalent to the Null 
-Model "Mo" in non-spatial CR analysis)
-   
+Select "Spatial Capture-Recapture" for running a spatially explicit capture-recapture analysis, or
+"Non-spatial Capture-Recapture" for running a conventional capture-recapture analysis (this is equivalent to the Null
+Model "M0" in non-spatial CR analysis)
+
+Note that including a \emph{location-specific} trap response in a \emph{non-spatial} model may lead to spurious results, as the trap response coefficient will pick up the spatial structure in the data.
+
 3.	\bold{Half Normal OR Negative Exponential}
-Currently \pkg{SPACECAP} analyses SECR models with only the Half-Normal detection function.
+
+See the discussion of detection functions on the \link{Model and Priors} help page. The half normal
+ detection function is generally a good fit to the data.
+ This has no effect for non-spatial analysis.
 
 4.	\bold{Bernoulli (binary)  OR Poisson encounter process}
-       Currently the analysis is run with the Bernoulli encounter model in which the probability of success is derived 
-       as the probability of a positive response under a Poisson encounter rate model. This motivates use of the 
-       complementary log-log link which relates encounter probability to distance and other covariates. After the model 
-       definition is complete, please click on "OK". Please check the frame at the bottom for status or error messages. 
-       In case you wish to edit your selections, please click on the "Edit" button, change your model definition and click 
-       on "OK" again. Proceed to the MCMC simulation settings frame.
+       Currently the analysis is run with the Bernoulli encounter model in which the probability of success is derived
+       as the probability of a positive response under a Poisson encounter rate model. This motivates use of the
+       complementary log-log link which relates encounter probability to distance and other covariates.
 
-\bold{STEP 3: Setting the Markov-Chain Monte Carlo (MCMC) parameters (for advanced users)}
+After the model definition is complete, click on "OK" and check the frame at the bottom for status or error messages. To edit your selections, just click on the "Edit" button, change your model definition and click on "OK" again.
 
-\pkg{SPACECAP}, uses the Markov-Chain Monte Carlo simulation algorithm written in Program \R (R Development Core Team ) 
-to estimate the parameters of the Spatially-explicit Capture Recapture models of Royle et al 2009). The relevant settings 
-can be set in the MCMC simulation settings panel of \pkg{SPACECAP}. 
+\bold{STEP 3: SETTING THE MARKOV-CHAIN MONTE CARLO (MCMC) PARAMETERS}
 
-\bold{No of iterations} - This defines the number of MCMC iterations for the analysis (if you aren't sure what this means please 
-set this to a value of about 50,000)
+\pkg{SPACECAP} uses a Markov-Chain Monte Carlo simulation algorithm written in \R to estimate the parameters of the SECR models of Royle et al (2009). (Wikipedia has a short page on Markov chain Monte Carlo methods.) The relevant settings can be set in the MCMC simulation settings panel of \pkg{SPACECAP}.
 
-\bold{Burn-in} - This defines the number of initial values to discard during the MCMC analysis. Setting this at about 1000 
-usually works well in our experience.  Note that some evaluation of whether this is sufficient should be carried out 
-using conventional methods (a topic we will address in subsequent releases).
+\bold{No of iterations} - This defines the total number of MCMC iterations for the analysis.
 
-\bold{Thinning} - This defines the thinning rate. Only iteration numbers defined by the thinning rate are stored during the 
-analysis (if you aren't sure of what this means, you may set this at a value of 1 -that is, no thinning. If you are 
-setting it to 1, please make sure that the number of iterations specified is less than 65,000. This is because Microsoft 
-Excel, which in most versions has a maximum limit of 65000 rows, will not be able to open our output file).    
+\bold{Burn-in} - This defines the number of initial values to discard during the MCMC analysis. The Geweke diagnostic (see below) will indicate if this is adequate.
 
-\bold{Data augmentation} - Since we are uncertain about the total number of animals, which is likely to be larger than the 
-minimum number caught during your camera trapping survey, you will need to "augment" this value by a certain amount. 
-Ideally, you would like this to be a very large number relative to the number you have caught, but setting it up to 
-be very high will cause the analysis to run for a very long time. As a rule of thumb, you could set this to a value 
-of about 5-10 times the number of animals you have photo-captured during the survey. Data augmentation (DA) is a 
-computational device that enables a convenient Bayesian analysis of capture-recapture models where N is unknown. 
-In the context of SECR models, N is the population of individuals having their activity centers on the prescribed 
-state-space. The basic idea of DA is to provide an upper bound on N, say M, which is equal to N plus the number of 
-augmented individuals.  Technically, M is the upper limit of a uniform(0,M) prior for N, which is a customary 
-"noninformative" prior for N in this context. As a practical matter, data augmentation creates a list of 
-pseudo-individuals that are always available for the MCMC algorithm to "use" if necessary. That is, these 
-pseudo-individuals leave and enter the population depending on the current values of the model parameters.  
-See Royle, Dorazio and Link (2007) for some general context and Royle et al. (2009) for details in the context of spatial 
-capture-recapture models. 
+\bold{Thinning} - This defines the proportion of iterations included in the output. If thinning = 10, only 1 in 10 of the iterations will be stored.
 
-After the MCMC simulation values have been specified, please click on "OK". Please check the frame at the bottom for 
-status or error messages. In case you wish to edit these settings, please click on the "Edit" button, edit these values 
-and click on "OK" again. You are now all set to start the analysis. 
+The number of values returned will be (iterations - burn-in) / thinning. The goodness-of-fit calculations are run for each value returned, and these are slow, so you should aim for about 10,000 values returned.
+
+It is a good idea to do short runs to begin with (say 10,000 iterations with 5,000 burn-in) and do a much longer run to get your final results (at least 100,000 iterations with enough burn-in to give adequate Geweke statistics).
+
+\bold{Data augmentation} - This is the maximum number of uncaught animals in the whole state space, and sets an upper limit to the estimate of N for the MCMC run. If it is too low, the estimate of N and (hence the density) will be incorrect. On the other hand, the run time increases linearly with the data augmentation value. Try an initial value of 5 to 10 times the number of animals captured, and check the output (see the \bold{Things to check} section below) and rerun with a higher value if necessary.
+
+See the \bold{Priors for N and psi} section of the \link{Model and Priors} page.
+
+After the MCMC simulation values have been specified, click on "OK" and check the frame at the bottom for status or error messages. To edit these settings, just click on the "Edit" button, edit these values and click on "OK" again. You are now all set to start the analysis.
 
 \bold{STEP 4: Running the analysis}
 
-The last step will simply involve activating the RUN option in the top menu bar. This will start performing the 
-analysis and you will see a progress bar indicating the status of the analysis. Currently, an analysis involving 
-50000 iterations takes about 14 hours on a fast computer.  We are working hard to make the algorithms run faster - 
-we promise! 
+Click on "Run" in the top menu bar. This will start the analysis and you will see a progress bar indicating the status of the analysis. Samples from the MCMC chain are reported in the bottom panel in the \pkg{SPACECAP} window and in the \R Console.
+
+Currently, an analysis of the example data set with the default model, 50,000 iterations, 20,000 burnin, thinning by 10, and data augmentation of 350 takes about 9.5 hours on a fast computer.
 
 \bold{Results}
 
-The posterior density estimates along with standard errors appear as a table in the output panel upon the completion of 
-the analysis. This table also reports estimates of parameters lam0, sigma, psi and beta. If the analysis was run with 
-trap response present, the estimates of "p1" and "p2" are also reported.
+The posterior density estimates along with standard errors appear as a table in the middle panel of the \pkg{SPACECAP} window and in the \R Console when
+the analysis is complete. This table also reports estimates of parameters lam0, sigma, and psi. For a non-spatial analysis, sigma will be reported as \code{NA}. If the analysis was run with
+trap response present, beta, p1, and p2 are reported; the probability of capture (if trap to home range center distance is zero) = p1 before the first capture and p2 afterwards. With no behavioural response, these will be equal, and beta will be zero.
 
-Additionally, all the results are written into a comma separated file (called \cr param_val_<timestamp>.csv) and is saved 
-into the current working directory. All the summary statistics are written into a file called 
-summary_stats_<timestamp>.csv, which is also saved to the current directory. And the posterior density graphs of all 
-parameters are all stored as jpeg files (.jpg) in the current working directory. \pkg{SPACECAP} also reports a file to 
-generate surface density map (called pixeldensities_val_<timestamp>.csv). This table reports estimates of pixel densities,
-and the corresponding X_COORD and Y_COORD of the pixels. The table can be then imported into any GIS platform to view the 
-pixel surface densities.
+\pkg{SPACECAP} produces a number of files which you will find in a folder called "output_<timestamp>" in your working directory (use \code{getwd()} so see your working directory path):
 
-\pkg{SPACECAP} assesses the convergence of the MCMC run by using the Geweke (1992) diagnostic statistic which is estimated for all the
-estimated parameters. This statistic produces the z-score values so that a value of |z-score|>1.6 will imply that the MCMC analysis
-has not been run long enough. \pkg{SPACECAP} also assesses the adequacy of a model using the Bayesian P-value, as implemented in Royle et al. (2011) so that any value that is close to 0 or 1 would imply that the model is inadequate. 
+  \tabular{ll}{
+  info_<timestamp>.txt \tab a text file with background information and diagnostics. \cr
+  param_val_<timestamp>.csv \tab the full MCMC chain for each parameter \cr
+  summary_stats_<timestamp>.csv \tab summary statistics for each parameter\cr
+  pixeldensities_val_<timestamp>.csv \tab estimates of density for each of the pixels in the potential home-range centers input file (for spatial models) \cr
+  detectionFunction_<timestamp>.jpg \tab a plot of the detection function (spatial models) \cr
+  density_lam0_<timestamp>.jpg \tab a density plot for the lam0 parameter \cr
+  density_N_<timestamp>.jpg \tab a density plot for N \cr
+  density_psi_<timestamp>.jpg \tab a density plot for psi \cr
+  density_sigma_<timestamp>.jpg \tab a density plot for sigma (spatial models) \cr
+  density_beta_<timestamp>.jpg \tab a density plot for beta (behavioural response models) }
 
-\bold{Further Developments in progress}
+\bold{Things to check}
 
-We plan to add a number of additional utility modules for various applications, which we will be incorporating in the 
-subsequent versions to be released in next few months. Some of the features we are currently working on are:
+\emph{Data augmentation:} Check the density plot for psi; the right-hand tail
+ should not get up to 1. The same applies to the density plot for N; the
+ tail should not approach the upper limit of the prior. If it does, rerun
+ the analysis with a higher value for data augmentation.
 
-1. Include the Poisson encounter process model. \cr
-2. Provide with the Hazard-Rate distance function model. \cr
-3. Incorporate sex-specific encounters. \cr
+\emph{State-space extent:} For spatial models, check the detection function plot and the detection
+probability for the smallest trap to state space edge distance. The detection
+probability for any animals with home ranges outside must be very small.
+%% can we indicate how small it should be? < 0.0001 ? For the example data set and
+%% neg. exp. the prob is 0.000239.
 
-\bold{Suggested Citation:}
+\emph{Convergence:} The Geweke test (see \code{\link[coda]{geweke.diag}}) compares
+ the means of the first 10\% and the last 50\% of the values in the chains. The
+ z-scores are in the info file and should all be between -1.6 and +1.6.
+ If not, rerun with a longer burn-in period.
 
-Arjun M. Gopalaswamy, Jeffrey A. Royle, James E. Hines, Pallavi, Singh, Devcharan Jathanna, N. Samba Kumar, K. Ullas Karanth (2011). 
-SPACECAP: A Program to Estimate Animal Abundance and Density using Bayesian Spatially-Explicit Capture-Recapture Models. 
-Wildlife Conservation Society - India Program, Centre for Wildlife Studies, Bengaluru, India. 
-Version 1.0.6.
+\emph{Sample size:} The values in the chain are not independent, and successive
+ values are correlated. The effective sample size is the sample size adjusted
+ for this autocorrelation (see \code{\link[coda]{effectiveSize}}). Effective
+ sizes of several hundred are adequate for point estimates (mean or median), but
+ many thousand are needed to get good estimates of the 95\% HDI and to get smooth
+ density curves. If necessary, run with more iterations (and higher thinning).
 
+\emph{Model fit:} Values of the Bayesian P-value (Royle et al. 2011) close to 0 or 1 imply that the model is inadequate. No simple solution to this, you will have to think of a better model!
 }
 
 \author{
-Arjun M. Gopalaswamy, Jeffrey A. Royle, James E. Hines, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar and K. Ullas Karanth
+Arjun M. Gopalaswamy, Jeffrey A. Royle, Michael E Meredith, Pallavi Singh, Devcharan Jathanna, N. Samba Kumar and K. Ullas Karanth
 }
 
 \references{
 
-Borchers, D. L., and M. G. Efford. 2008. Spatially explicit maximum likelihood methods for capture-recapture studies. 
-  \emph{Biometrics} 64:377-385.
-  
 Geweke, J. 1992. Evaluating the accuracy of sampling-based approaches to the calculation of posterior moments. In: Bayesian
-  Statistics, \bold{4}(Bernardo, J. M. et al., Eds), 169-193. Oxford University Press.
-
-Karanth, K. U., and J. D. Nichols. 1998. Estimation of tiger densities in India using photographic 
-  captures and recaptures. \emph{Ecology} \bold{79}:2852-2862.
-
-Parmenter, R., et al. 2003. Small-mammal density estimation: a field comparison of grid-based
-  vs. web-based density estimators. \emph{Ecological Monographs} \bold{73}:1-26.
-
-R Development Core Team.2009. R: A language and environment for statistical computing. R Foundation for Statistical 
-  Computing,  Vienna, Austria. ISBN 3-900051-07-0, URL http://www.R-project.org.
-
-Royle, J. A., R. M. Dorazio, and W. A. Link. 2007. Analysis of multinomial models with unknown index using data 
-  augmentation. \emph{Journal of Computational and Graphical Statistics} \bold{16}:67-85. 
+  Statistics, \bold{4} (Bernardo, J. M. et al., Eds), 169-193. Oxford University Press.
 
 Royle, J. A., K. U. Karanth, A. M. Gopalaswamy and N. S. Kumar. 2009. Bayesian inference in camera trapping studies for a class of spatial capture-recapture models. \emph{Ecology} \bold{90(11)}, 3233-3244.
 
 Royle, J. A., M. Kery and J. Guelat. 2011. Spatial capture-recapture models for search-encounter data. \emph{Methods in Ecology and Evolution} \bold{2}:602-611.
-
-Trolle, M., and M. Kery. 2003. Estimation of ocelot density in the Pantanal using capture-
-            recapture analysis of camera trapping data. \emph{Journal of Mammalogy} \bold{84}:607-614.
-
-Wilson, K. R., and D. R. Anderson. 1985a.  Evaluation of a nested grid approach for estimating density. 
-  \emph{Journal of Wildlife Management} \bold{49}:675-678.
-
-Wilson, K. R., and D. R. Anderson. 1985b.  Evaluation of two density estimators of small mammal population size. 
-  \emph{Journal of Mammalogy} \bold{66}:13-21. 
 
 }
 

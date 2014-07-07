@@ -1,13 +1,7 @@
-# Default NAMESPACE created by R
-# Remove the previous line if you edit this file
 
-# Export all names
-exportPattern(".")
+importFrom(coda, as.mcmc, geweke.diag, effectiveSize)
 
-# Import all packages listed as Imports or Depends
-import(
-  tcltk,
-  TeachingDemos,
-  coda,
-  lattice
-)
+export(SPACECAP)
+
+# Not exported: hdi, e2dist, plotDetFunc
+
